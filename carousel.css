@@ -1,6 +1,23 @@
 /* GLOBAL STYLES
 -------------------------------------------------- */
 /* Padding below the footer and lighter body text */
+  .logo-espaciales {
+    height: auto;
+    max-height: 100px;
+  }
+
+  @media (max-width: 768px) {
+    .logo-espaciales {
+      width: 280px;
+    }
+    
+    
+        @media (max-width: 768px) {
+    #valen-dibujando {
+      width: 280px;
+    }
+  }
+  }
 
 body {
   padding-top: 3rem;
