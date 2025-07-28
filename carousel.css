@@ -1,29 +1,37 @@
+
 /* GLOBAL STYLES
 -------------------------------------------------- */
 /* Padding below the footer and lighter body text */
-  .logo-espaciales {
-    height: auto;
-    max-height: 100px;
+@media (max-width: 767px) {
+  .navbar-brand img {
+    height: 35px;
+    max-height: 35px;
   }
+}
 
-  @media (max-width: 768px) {
-    .logo-espaciales {
-      width: 280px;
-    }
-    
-    
-        @media (max-width: 768px) {
-    #valen-dibujando {
-      width: 280px;
-    }
-  }
-  }
+.form-control {
+  border-radius: 0;
+  border-color: #2a5db0; /* Azul similar al de la imagen */
+}
+
+.input-group .btn-outline-secondary {
+  border-radius: 0;
+  border-color: #2a5db0;
+  color: #2a5db0;
+}
+
+.input-group .btn-outline-secondary:hover {
+  background-color: #2a5db0;
+  color: white;
+}
 
 body {
   padding-top: 3rem;
   padding-bottom: 3rem;
   color: #5a5a5a;
+
 }
+
     footer {
       background-color: #F2F2F2;
       padding: 2.5rem 1.5rem;
