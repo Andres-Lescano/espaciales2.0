@@ -13,6 +13,8 @@
   <link rel="preload" as="image" href="gato.PNG">
   <link rel="preload" as="image" href="alien.jpg">
   <link rel="preload" as="image" href="valen3.jpg">
+  <!-- PRELOAD: video -->
+  <link rel="preload" as="video" href="video.mov" type="video/quicktime">
 
   <style>
     :root{
@@ -254,14 +256,15 @@
       </div>
       <div class="col-12 col-md-auto d-flex justify-content-center justify-content-md-start">
         <div class="media-box">
-          <video class="w-100 shadow border border-secondary" src="IMG_8977.MOV" controls playsinline preload="metadata" style="max-width: 100%; height: auto; width: 100%; max-height: 550px; object-fit: cover;">
-            Tu navegador no soporta el video. Podés descargarlo desde <a href="IMG_8977.MOV">acá</a>.
+          <video class="w-100 shadow border border-secondary" controls playsinline preload="metadata" style="max-width: 100%; height: auto; width: 100%; max-height: 550px; object-fit: cover;">
+            <source src="video.mov" type="video/quicktime">
+            Tu navegador no soporta el video. Podés descargarlo desde <a href="video.mov">acá</a>.
           </video>
         </div>
       </div>
       <div class="col-12 col-md-auto d-flex justify-content-center justify-content-md-end">
         <figure class="m-0 media-box">
-          <img src="valen1.jpg" alt="Foto de contacto" style="max-width: 100%; height: auto; width: 100%; max-height: 550px; object-fit: cover;">
+          <img src="valen1.jpg" alt="Retrato de Valentín" style="max-width: 100%; height: auto; width: 100%; max-height: 550px; object-fit: cover;">
         </figure>
       </div>
     </div>
@@ -326,8 +329,7 @@
     }
     function setActive(link){
       document.querySelectorAll('.navbar .nav-link').forEach(a=>a.classList.remove('active'));
-      link.addClass?.('active');
-      if (!link.classList.contains('active')) link.classList.add('active');
+      link.classList.add('active');
     }
     function reloadHome(ev){
       if (ev) ev.preventDefault();
