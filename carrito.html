@@ -14,9 +14,36 @@
     .navbar .nav-link, .navbar .navbar-brand{ color:var(--fg); }
     a{ color:var(--accent); }
 
-    /* Carrito (tabla) */
+    /* Tabla */
     .table-dark td, .table-dark th{ vertical-align:middle; }
     .qty-btn{ width:2rem; height:2rem; padding:0; line-height:2rem; text-align:center; }
+
+    /* En desktop dejo overflow visible para que el hover grande no se recorte */
+    @media (min-width: 992px){
+      .table-responsive{ overflow:visible; }
+    }
+
+    /* Miniatura + hover */
+    .thumb-wrap{ width:46px; height:46px; position:relative; flex:0 0 46px; overflow:visible; }
+    .thumb{
+      width:100%; height:100%; object-fit:cover; border-radius:8px; display:block;
+      transition:transform .18s ease, box-shadow .18s ease; cursor:zoom-in;
+    }
+    @media (hover:hover) and (pointer:fine){
+      .thumb:hover{ transform:scale(3.2); transform-origin:left center; box-shadow:0 14px 36px rgba(0,0,0,.55); z-index:3; position:relative; }
+    }
+
+    /* Preview flotante en desktop (evita que se corte con bordes) */
+    .hover-preview{
+      position:fixed; z-index:2000; pointer-events:none; filter:drop-shadow(0 18px 42px rgba(0,0,0,.6));
+    }
+    .hover-preview img{ width:300px; max-height:70vh; border-radius:12px; background:#000; display:block; }
+    @media (max-width: 991.98px){ .hover-preview{ display:none; } }
+
+    /* Lightbox */
+    .lightbox{ position:fixed; inset:0; background:rgba(0,0,0,.86); display:none; align-items:center; justify-content:center; z-index:2050; padding:24px; }
+    .lightbox.open{ display:flex; }
+    .lightbox img{ max-width:90vw; max-height:90vh; border-radius:12px; box-shadow:0 20px 50px rgba(0,0,0,.7); }
 
     /* Panel resumen */
     .summary{ background:#0f0f0f; border:1px solid #1c1c1c; border-radius:12px; }
@@ -35,19 +62,28 @@
     .order-code{ font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     .order-body{ white-space:pre-wrap; background:#0b0b0b; border:1px dashed #2a2a2a; border-radius:8px; padding:12px; }
 
-    /* Imágenes derecha (si las usás en el futuro) */
-    .hero-img{ width:100%; height:auto; border-radius:16px; object-fit:cover; max-height:400px; }
+    /* ===== Mobile tweaks: más chico y sin scroll horizontal ===== */
+    @media (max-width: 576px){
+      .container{ padding-left:12px; padding-right:12px; }
+      .table{ font-size:.92rem; }
+      .thumb-wrap{ width:38px; height:38px; }
+      .qty-btn{ width:1.75rem; height:1.75rem; line-height:1.75rem; }
+      /* oculto columna "Precio" para ganar ancho (dejamos Subtotal) */
+      table thead th:nth-child(3),
+      table tbody td:nth-child(3){ display:none; }
+      /* evito barras horizontales dentro de la tabla */
+      .table-responsive{ overflow-x:hidden; }
+    }
   </style>
 </head>
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
     <div class="container">
-      <a id="brandToShop" class="navbar-brand d-flex align-items-center" href="index.html#inicio">
-        <!-- AHORA EN LA MISMA CARPETA -->
+      <a class="navbar-brand d-flex align-items-center" href="index.html#inicio">
         <img src="logo.png" alt="Espaciales" style="height: 40px; max-height: 40px; width:auto;">
       </a>
       <div class="ms-auto">
-        <a id="backToShop" class="btn btn-sm btn-outline-light" href="index.html#tienda">🛍️ Volver a la tienda</a>
+        <a class="btn btn-sm btn-outline-light" href="index.html#tienda">🛍️ Volver a la tienda</a>
       </div>
     </div>
   </nav>
@@ -59,10 +95,8 @@
       Tu carrito está vacío. <a href="index.html#tienda">Explorá la tienda</a> y sumá tus favoritas.
     </div>
 
-    <div id="cartWrap" class="row g-4">
-      <!-- IZQUIERDA: Carrito (editable) + Resumen + Datos -->
-      <div class="col-12 ">
-        <!-- Carrito -->
+    <div class="row g-4">
+      <div class="col-12">
         <div class="table-responsive mb-3">
           <table class="table table-dark table-hover align-middle">
             <thead>
@@ -80,15 +114,10 @@
         </div>
         <button id="clearBtn" class="btn btn-outline-light btn-sm mb-4">Vaciar carrito</button>
 
-        <!-- Resumen + Datos -->
         <div class="p-3 summary">
           <h2 class="h5">Resumen</h2>
-          <div class="d-flex justify-content-between">
-            <span>Items</span><strong id="itemsCount">0</strong>
-          </div>
-          <div class="d-flex justify-content-between">
-            <span>Total</span><strong id="totalPrice">$0</strong>
-          </div>
+          <div class="d-flex justify-content-between"><span>Items</span><strong id="itemsCount">0</strong></div>
+          <div class="d-flex justify-content-between"><span>Total</span><strong id="totalPrice">$0</strong></div>
           <hr>
           <div id="shippingMsg" class="muted small mb-3"></div>
 
@@ -127,9 +156,7 @@
               <textarea id="bf_notes" class="form-control" rows="2" placeholder="Color, entrega, referencia, etc."></textarea>
             </div>
 
-            <div class="small muted mb-2">
-              💡 El pago se realiza <strong>por fuera</strong> de la web. Te contactamos para finalizar.
-            </div>
+            <div class="small muted mb-2">💡 El pago se realiza <strong>por fuera</strong> de la web. Te contactamos para finalizar.</div>
 
             <div class="d-grid gap-2">
               <button id="sendWA" type="button" class="btn btn-accent">Enviar por WhatsApp</button>
@@ -140,12 +167,10 @@
       </div>
     </div>
 
-    <!-- Pedido enviado (reflejo en la misma página) -->
+    <!-- Pedido enviado -->
     <div id="sentPanel" class="order-panel p-3 mt-4 d-none">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <div>
-          <strong>Pedido enviado</strong> · Código <span id="sentCode" class="order-code"></span>
-        </div>
+        <div><strong>Pedido enviado</strong> · Código <span id="sentCode" class="order-code"></span></div>
         <div class="d-flex gap-2">
           <button id="copyMsg" class="btn btn-sm btn-outline-light">Copiar</button>
           <button id="printMsg" class="btn btn-sm btn-light text-dark">Imprimir</button>
@@ -156,75 +181,52 @@
     </div>
   </div>
 
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox" aria-hidden="true" role="dialog">
+    <img id="lightboxImg" alt="Vista ampliada">
+  </div>
+
   <script>
-    // ---------- Config ----------
+    /* ---------- Config/Utils ---------- */
     const CART_KEY = 'espaciales_cart';
     const LAST_ORDER_KEY = 'espaciales_last_order';
-    const WA_NUMBER = '542944607760'; // sin "+"
+    const WA_NUMBER = '542944607760';
     const IG_USERNAME = 'e.spaciales';
-
-    // ---------- Utils ----------
-    const $ = sel => document.querySelector(sel);
+    const $ = s => document.querySelector(s);
     const money = n => new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(n);
 
-    const empty = $('#empty');
-
-    // Carrito (tabla)
     const tbody = $('#tbody');
     const clearBtn = $('#clearBtn');
-
-    // Form
+    const empty = $('#empty');
     const buyerForm = $('#buyerForm');
-    const fName  = $('#bf_name');
-    const fEmail = $('#bf_email');
-    const fPhone = $('#bf_phone');
-    const fCity  = $('#bf_city');
-    const fPay   = $('#bf_pay');
-    const fNotes = $('#bf_notes');
+    const fName=$('#bf_name'), fEmail=$('#bf_email'), fPhone=$('#bf_phone'), fCity=$('#bf_city'), fPay=$('#bf_pay'), fNotes=$('#bf_notes');
+    const itemsCount=$('#itemsCount'), totalPrice=$('#totalPrice'), shippingMsg=$('#shippingMsg');
+    const sendWA=$('#sendWA'), sendIG=$('#sendIG');
+    const sentPanel=$('#sentPanel'), sentCode=$('#sentCode'), sentBody=$('#sentBody'), copyMsg=$('#copyMsg'), printMsg=$('#printMsg');
 
-    // Resumen
-    const itemsCount = $('#itemsCount');
-    const totalPrice = $('#totalPrice');
-    const shippingMsg = $('#shippingMsg');
+    const getCart = () => { try{ return JSON.parse(localStorage.getItem(CART_KEY)) || []; }catch{ localStorage.removeItem(CART_KEY); return []; } };
+    const setCart = c => { localStorage.setItem(CART_KEY, JSON.stringify(c)); render(); };
+    const qtySum = c => c.reduce((a,it)=>a+it.qty,0);
+    const total  = c => c.reduce((a,it)=>a+it.qty*it.price,0);
 
-    // Acciones
-    const sendWA = $('#sendWA');
-    const sendIG = $('#sendIG');
-
-    // Panel enviado
-    const sentPanel = $('#sentPanel');
-    const sentCode = $('#sentCode');
-    const sentBody = $('#sentBody');
-    const copyMsg = $('#copyMsg');
-    const printMsg = $('#printMsg');
-
-    function getCart(){ try{ return JSON.parse(localStorage.getItem(CART_KEY)) || []; }catch{ return []; } }
-    function setCart(c){ localStorage.setItem(CART_KEY, JSON.stringify(c)); render(); }
-
-    function qtySum(cart){ return cart.reduce((a,it)=>a+it.qty,0); }
-    function total(cart){ return cart.reduce((a,it)=>a+it.qty*it.price,0); }
-
-    // ---------- Render ----------
+    /* ---------- Render ---------- */
     function render(){
       const cart = getCart();
-
-      if(cart.length===0){ empty.classList.remove('d-none'); }
-      else{ empty.classList.add('d-none'); }
-
-      // cuerpo tabla
+      empty.classList.toggle('d-none', cart.length!==0);
       tbody.innerHTML = '';
+
       for(const it of cart){
+        const img = it.img || it.image || it.imageUrl || it.photo || it.thumb || '';
+        const full = it.imgFull || it.full || img;
+        const thumbHtml = img
+          ? `<div class="thumb-wrap"><img class="thumb" src="${img}" data-full="${full}" alt="${(it.name||'Producto')}" loading="lazy"></div>`
+          : `<div class="rounded border border-secondary" style="width:46px;height:46px; background:#111;"></div>`;
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>
-            <div class="d-flex align-items-center gap-2">
-              <div class="rounded border border-secondary" style="width:46px;height:46px; background:#111;"></div>
-              <div>
-                <div class="fw-semibold">${it.name}</div>
-                <div class="text-secondary small">Código: ${it.id}</div>
-              </div>
-            </div>
-          </td>
+          <td><div class="d-flex align-items-center gap-2">${thumbHtml}
+            <div><div class="fw-semibold">${it.name}</div><div class="text-secondary small">Código: ${it.id}</div></div>
+          </div></td>
           <td class="text-center"><span class="badge bg-light text-dark">${it.size}</span></td>
           <td class="text-end">${money(it.price)}</td>
           <td class="text-center">
@@ -235,21 +237,15 @@
             </div>
           </td>
           <td class="text-end">${money(it.qty*it.price)}</td>
-          <td class="text-end">
-            <button class="btn btn-outline-danger btn-sm" data-act="del" data-key="${it.key}">✕</button>
-          </td>
+          <td class="text-end"><button class="btn btn-outline-danger btn-sm" data-act="del" data-key="${it.key}">✕</button></td>
         `;
         tbody.appendChild(tr);
       }
 
-      // listeners +/−/del
       tbody.querySelectorAll('button[data-key]').forEach(btn=>{
         btn.addEventListener('click', ()=>{
-          const key = btn.dataset.key;
-          const act = btn.dataset.act;
-          const c = getCart();
-          const i = c.findIndex(x=>x.key===key);
-          if(i<0) return;
+          const key = btn.dataset.key, act = btn.dataset.act;
+          const c = getCart(); const i = c.findIndex(x=>x.key===key); if(i<0) return;
           if(act==='inc') c[i].qty += 1;
           if(act==='dec') c[i].qty = Math.max(1, c[i].qty-1);
           if(act==='del') c.splice(i,1);
@@ -257,178 +253,93 @@
         });
       });
 
-      // resumen
       const cartNow = getCart();
       const count = qtySum(cartNow);
       itemsCount.textContent = count;
       totalPrice.textContent = money(total(cartNow));
-      if(count >= 3){
-        shippingMsg.innerHTML = '🎉 Tenés <strong>envío gratis</strong> por 3 o más remeras.';
-      }else{
-        shippingMsg.innerHTML = `Te faltan <strong>${Math.max(0,3-count)}</strong> para el envío gratis.`;
-      }
+      shippingMsg.innerHTML = (count>=3) ? '🎉 Tenés <strong>envío gratis</strong> por 3 o más remeras.' : `Te faltan <strong>${Math.max(0,3-count)}</strong> para el envío gratis.`;
     }
 
-    // Vaciar carrito
-    clearBtn.addEventListener('click', ()=>{
-      if(confirm('¿Vaciar carrito?')) { localStorage.removeItem(CART_KEY); render(); }
-    });
-
-    // ---------- Validaciones ----------
-    function markInvalid(input, invalid){ input.classList.toggle('is-invalid', invalid); }
+    /* ---------- Acciones ---------- */
+    clearBtn.addEventListener('click', ()=>{ if(confirm('¿Vaciar carrito?')){ localStorage.removeItem(CART_KEY); render(); } });
 
     function validateBuyer(){
-      let ok = true;
-      markInvalid(fName, !fName.value.trim()); if(!fName.value.trim()) ok = false;
-      markInvalid(fPay, !fPay.value.trim());   if(!fPay.value.trim()) ok = false;
-
-      const hasEmail = fEmail.value.trim().length > 0;
-      const hasPhone = fPhone.value.trim().length > 0;
-      if(!hasEmail && !hasPhone){
-        markInvalid(fEmail, true); markInvalid(fPhone, true); ok = false;
-      }else{
-        markInvalid(fEmail, false); markInvalid(fPhone, false);
-      }
-
-      if(hasEmail){
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const bad = !re.test(fEmail.value.trim());
-        markInvalid(fEmail, bad); if(bad) ok = false;
-      }
+      let ok = true; const mark=(el,b)=>el.classList.toggle('is-invalid',b);
+      mark(fName,!fName.value.trim()); if(!fName.value.trim()) ok=false;
+      mark(fPay,!fPay.value.trim());   if(!fPay.value.trim()) ok=false;
+      const hasEmail=!!fEmail.value.trim(), hasPhone=!!fPhone.value.trim();
+      if(!hasEmail && !hasPhone){ mark(fEmail,true); mark(fPhone,true); ok=false; } else { mark(fEmail,false); mark(fPhone,false); }
+      if(hasEmail){ const re=/^[^\s@]+@[^\s@]+\.[^\s@]+$/; const bad=!re.test(fEmail.value.trim()); mark(fEmail,bad); if(bad) ok=false; }
       return ok;
     }
-
-    // ---------- Mensaje de pedido ----------
-    function genOrderCode(){
-      return 'ESP-' + Math.random().toString(36).slice(2,8).toUpperCase() + Date.now().toString(36).slice(-2).toUpperCase();
+    const composeBuyer=()=>({ name:fName.value.trim(), email:fEmail.value.trim(), phone:fPhone.value.trim(), city:fCity.value.trim(), pay:fPay.value.trim(), notes:fNotes.value.trim() });
+    const genOrderCode=()=> 'ESP-'+Math.random().toString(36).slice(2,8).toUpperCase()+Date.now().toString(36).slice(-2).toUpperCase();
+    function buildMessage(cart,buyer,code){
+      const L=[]; L.push(`Pedido Espaciales — ${code}`,'',`Cliente: ${buyer.name}`);
+      if(buyer.city) L.push(`Localidad/Envío: ${buyer.city}`); if(buyer.email) L.push(`Email: ${buyer.email}`); if(buyer.phone) L.push(`Tel/WA: ${buyer.phone}`);
+      L.push(`Método de pago: ${buyer.pay}`,'','Items:'); for(const it of cart){ L.push(`- ${it.name} (Talle ${it.size}) x${it.qty} — ${money(it.qty*it.price)}`); }
+      const count=qtySum(cart), tot=total(cart); L.push('',`Cantidad: ${count}`,`Total a pagar: ${money(tot)}`); if(count>=3) L.push('Incluye envío gratis por 3+ remeras.');
+      if(buyer.notes){ L.push('','Comentarios:',buyer.notes); } return L.join('\n');
     }
-
-    function buildMessage(cart, buyer, code){
-      const lines = [];
-      lines.push(`Pedido Espaciales — ${code}`);
-      lines.push('');
-      lines.push(`Cliente: ${buyer.name}`);
-      if(buyer.city)  lines.push(`Localidad/Envío: ${buyer.city}`);
-      if(buyer.email) lines.push(`Email: ${buyer.email}`);
-      if(buyer.phone) lines.push(`Tel/WA: ${buyer.phone}`);
-      lines.push(`Método de pago: ${buyer.pay}`);
-      lines.push('');
-      lines.push('Items:');
-      for(const it of cart){
-        const sub = it.qty * it.price;
-        lines.push(`- ${it.name} (Talle ${it.size}) x${it.qty} — ${money(sub)}`);
-      }
-      lines.push('');
-      const count = qtySum(cart);
-      const tot = total(cart);
-      lines.push(`Cantidad: ${count}`);
-      lines.push(`Total a pagar: ${money(tot)}`);
-      if(count >= 3) lines.push('Incluye envío gratis por 3+ remeras.');
-      if(buyer.notes){
-        lines.push('');
-        lines.push('Comentarios:');
-        lines.push(buyer.notes);
-      }
-      return lines.join('\n');
-    }
-
     function saveLastOrder(order){ localStorage.setItem(LAST_ORDER_KEY, JSON.stringify(order)); }
-
-    function showSentPanel(order){
-      sentCode.textContent = order.code;
-      sentBody.textContent = order.body;
-      sentPanel.classList.remove('d-none');
-      sentPanel.scrollIntoView({behavior:'smooth', block:'start'});
-    }
-
-    function loadLastOrder(){
-      try{
-        const data = JSON.parse(localStorage.getItem(LAST_ORDER_KEY) || 'null');
-        if(data && data.code && data.body){ showSentPanel(data); }
-      }catch{}
-    }
-
-    // ---------- Limpieza de RESUMEN al salir del carrito ----------
-    function clearOrderSummary(){
-      try{ localStorage.removeItem(LAST_ORDER_KEY); }catch{}
-      sentPanel.classList.add('d-none');
-      sentCode.textContent = '';
-      sentBody.textContent = '';
-      if (buyerForm) {
-        buyerForm.reset();
-        [fName,fEmail,fPhone,fCity,fPay,fNotes].forEach(el => el && el.classList.remove('is-invalid'));
-      }
-    }
-    // actualizado: ahora apunta a index.html
-    document.querySelectorAll('a[href^="index.html"]').forEach(a=>{
-      a.addEventListener('click', clearOrderSummary, { capture:true });
-    });
-    window.addEventListener('pagehide', clearOrderSummary);
-
-    // ---------- Envío por WhatsApp / Instagram ----------
-    function composeBuyer(){
-      return {
-        name: fName.value.trim(),
-        email: fEmail.value.trim(),
-        phone: fPhone.value.trim(),
-        city:  fCity.value.trim(),
-        pay:   fPay.value.trim(),
-        notes: fNotes.value.trim()
-      };
-    }
+    function showSentPanel(order){ sentCode.textContent=order.code; sentBody.textContent=order.body; sentPanel.classList.remove('d-none'); sentPanel.scrollIntoView({behavior:'smooth'}); }
+    function loadLastOrder(){ try{ const d=JSON.parse(localStorage.getItem(LAST_ORDER_KEY)||'null'); if(d&&d.code&&d.body) showSentPanel(d); }catch{} }
 
     async function handleSend(kind){
-      const cart = getCart();
-      if(cart.length === 0){ alert('Tu carrito está vacío'); return; }
-      if(!validateBuyer()){
-        alert('Completá los campos obligatorios (nombre, método de pago y un contacto).');
-        return;
+      const cart=getCart();
+      if(cart.length===0) return alert('Tu carrito está vacío');
+      if(!validateBuyer()) return alert('Completá los campos obligatorios (nombre, método de pago y un contacto).');
+
+      const buyer=composeBuyer(); const code=genOrderCode(); const body=buildMessage(cart,buyer,code);
+      const order={ code, body, buyer, at:Date.now() }; saveLastOrder(order); showSentPanel(order);
+
+      if(kind==='wa'){
+        if(!WA_NUMBER || WA_NUMBER.length<8) return alert('Configurá tu número de WhatsApp en el código (WA_NUMBER).');
+        window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(body)}`,'_blank');
       }
-
-      const buyer = composeBuyer();
-      const code = genOrderCode();
-      const body = buildMessage(cart, buyer, code);
-
-      const order = { code, body, buyer, at: Date.now() };
-      saveLastOrder(order);
-      showSentPanel(order);
-
-      if(kind === 'wa'){
-        if(!WA_NUMBER || WA_NUMBER.length < 8){
-          alert('Configurá tu número de WhatsApp en el código (WA_NUMBER).'); return;
-        }
-        const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(body)}`;
-        window.open(url, '_blank');
-      }
-
-      if(kind === 'ig'){
-        // Intentamos copiar el texto para que lo pegues en el DM
-        try{
-          await navigator.clipboard.writeText(body);
-          alert('Abrí Instagram. El resumen fue copiado al portapapeles: pegalo en el chat 👌');
-        }catch{
-          alert('Abrí Instagram. Si no se copió automáticamente, usá el botón "Copiar" del resumen.');
-        }
-        const igUrl = `https://ig.me/m/${IG_USERNAME}`;
-        window.open(igUrl, '_blank');
+      if(kind==='ig'){
+        try{ await navigator.clipboard.writeText(body); alert('Abrí Instagram. El resumen fue copiado al portapapeles: pegalo en el chat 👌'); }
+        catch{ alert('Abrí Instagram. Si no se copió automáticamente, usá el botón "Copiar" del resumen.'); }
+        window.open(`https://ig.me/m/${IG_USERNAME}`,'_blank');
       }
     }
-
-    sendWA.addEventListener('click', ()=>handleSend('wa'));
-    sendIG.addEventListener('click', ()=>handleSend('ig'));
-
-    copyMsg.addEventListener('click', async ()=>{
-      try{
-        await navigator.clipboard.writeText(sentBody.textContent || '');
-        copyMsg.textContent = 'Copiado ✔';
-        setTimeout(()=> copyMsg.textContent = 'Copiar', 1200);
-      }catch{ alert('No se pudo copiar. Copiá manualmente.'); }
+    $('#sendWA').addEventListener('click', ()=>handleSend('wa'));
+    $('#sendIG').addEventListener('click', ()=>handleSend('ig'));
+    $('#copyMsg').addEventListener('click', async ()=>{
+      try{ await navigator.clipboard.writeText(sentBody.textContent||''); copyMsg.textContent='Copiado ✔'; setTimeout(()=>copyMsg.textContent='Copiar',1200); }
+      catch{ alert('No se pudo copiar. Copiá manualmente.'); }
     });
-    printMsg.addEventListener('click', ()=>window.print());
+    $('#printMsg').addEventListener('click', ()=>window.print());
 
-    // ---------- Init ----------
-    render();
-    loadLastOrder();
+    /* ---------- Hover preview (desktop) ---------- */
+    (function(){
+      const supportsHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+      if(!supportsHover) return;
+      let hp=null;
+      function show(src){ hide(); hp=document.createElement('div'); hp.className='hover-preview'; const im=new Image(); im.src=src; hp.appendChild(im); document.body.appendChild(hp); }
+      function pos(x,y){
+        if(!hp) return;
+        const pad=16, vw=document.documentElement.clientWidth, vh=document.documentElement.clientHeight, w=hp.offsetWidth||300, h=hp.offsetHeight||300;
+        let left=x+18, top=y-h/2; if(left+w+pad>vw) left=x-w-18; if(left<pad) left=pad; if(top<pad) top=pad; if(top+h+pad>vh) top=vh-h-pad;
+        hp.style.left=left+'px'; hp.style.top=top+'px';
+      }
+      function hide(){ if(hp){ hp.remove(); hp=null; } }
+      tbody.addEventListener('mouseover', e=>{ const t=e.target.closest('.thumb'); if(!t) return; show(t.dataset.full||t.src); pos(e.clientX,e.clientY); });
+      tbody.addEventListener('mousemove', e=>pos(e.clientX,e.clientY));
+      tbody.addEventListener('mouseout', e=>{ if(e.target.closest('.thumb')) hide(); });
+      window.addEventListener('scroll', hide, {passive:true});
+    })();
+
+    /* ---------- Lightbox (click) ---------- */
+    document.addEventListener('click', e=>{
+      const imgEl=e.target.closest('.thumb'); if(!imgEl) return;
+      const src=imgEl.dataset.full||imgEl.getAttribute('src'); if(!src) return;
+      const lb=$('#lightbox'); const lbImg=$('#lightboxImg'); if(lbImg) lbImg.src=src; lb.classList.add('open');
+    });
+    (function(){ const lb=$('#lightbox'); if(!lb) return; lb.addEventListener('click', ()=>{ const lbImg=$('#lightboxImg'); lb.classList.remove('open'); if(lbImg) lbImg.src=''; }); })();
+
+    /* ---------- Init ---------- */
+    render(); loadLastOrder();
   </script>
 </body>
 </html>
