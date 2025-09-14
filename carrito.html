@@ -205,7 +205,25 @@
     const sentPanel=$('#sentPanel'), sentCode=$('#sentCode'), sentBody=$('#sentBody'), copyMsg=$('#copyMsg'), printMsg=$('#printMsg');
 
     const getCart = () => { try{ return JSON.parse(localStorage.getItem(CART_KEY)) || []; }catch{ localStorage.removeItem(CART_KEY); return []; } };
-    const setCart = c => { localStorage.setItem(CART_KEY, JSON.stringify(c)); render(); };
+
+    // 🔒 Limpiador central de datos de pedido
+    function clearOrderData(){
+      try{ localStorage.removeItem(LAST_ORDER_KEY); }catch{}
+      // oculto panel y limpio textos
+      if(sentPanel){ sentPanel.classList.add('d-none'); }
+      if(sentBody){ sentBody.textContent=''; }
+      if(sentCode){ sentCode.textContent=''; }
+      // reseteo formulario y estados inválidos
+      if(buyerForm){ buyerForm.reset(); document.querySelectorAll('.is-invalid').forEach(el=>el.classList.remove('is-invalid')); }
+    }
+
+    // Guarda y re-renderiza el carrito. Si queda vacío, borro datos de pedido.
+    const setCart = c => {
+      localStorage.setItem(CART_KEY, JSON.stringify(c));
+      render();
+      if(!c || c.length === 0){ clearOrderData(); }
+    };
+
     const qtySum = c => c.reduce((a,it)=>a+it.qty,0);
     const total  = c => c.reduce((a,it)=>a+it.qty*it.price,0);
 
@@ -249,7 +267,7 @@
           if(act==='inc') c[i].qty += 1;
           if(act==='dec') c[i].qty = Math.max(1, c[i].qty-1);
           if(act==='del') c.splice(i,1);
-          setCart(c);
+          setCart(c); // setCart se encarga de limpiar datos de pedido si queda vacío
         });
       });
 
@@ -261,7 +279,12 @@
     }
 
     /* ---------- Acciones ---------- */
-    clearBtn.addEventListener('click', ()=>{ if(confirm('¿Vaciar carrito?')){ localStorage.removeItem(CART_KEY); render(); } });
+    clearBtn.addEventListener('click', ()=>{
+      if(confirm('¿Vaciar carrito?')){
+        // dejo el carrito en vacío y limpio datos de pedido
+        setCart([]);
+      }
+    });
 
     function validateBuyer(){
       let ok = true; const mark=(el,b)=>el.classList.toggle('is-invalid',b);
@@ -337,6 +360,12 @@
       const lb=$('#lightbox'); const lbImg=$('#lightboxImg'); if(lbImg) lbImg.src=src; lb.classList.add('open');
     });
     (function(){ const lb=$('#lightbox'); if(!lb) return; lb.addEventListener('click', ()=>{ const lbImg=$('#lightboxImg'); lb.classList.remove('open'); if(lbImg) lbImg.src=''; }); })();
+
+    /* ---------- Borrar datos de pedido al salir de la página ---------- */
+    // pagehide funciona incluso con el back/forward cache
+    window.addEventListener('pagehide', clearOrderData, { once:true });
+    // fallback si el navegador no dispara pagehide en algún caso
+    document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden') clearOrderData(); });
 
     /* ---------- Init ---------- */
     render(); loadLastOrder();
