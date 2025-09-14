@@ -31,6 +31,10 @@
     .navbar .nav-link.active{color:var(--accent)!important;}
     .shipping-bar{background:var(--accent); color:#0a0a0a; font-weight:800; letter-spacing:.5px;}
 
+    /* Botón carrito móvil compacto */
+    .btn-cart-mobile{ padding:.35rem .6rem; display:inline-flex; align-items:center; gap:.35rem; font-weight:600; }
+    #cartCountMobileNav{ min-width:1.25rem; line-height:1.1rem; }
+
     /* ===== HERO ===== */
     .hero{
       --hero-h: 56vh;
@@ -112,29 +116,40 @@
 <body>
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
-    <div class="container">
+    <div class="container align-items-center">
       <!-- Logo: recarga -->
       <a class="navbar-brand d-flex align-items-center" href="#" onclick="return reloadHome(event)" title="Recargar inicio">
         <img src="logo.png" alt="Espaciales Logo" style="height: 40px; max-height: 40px; width: auto;">
       </a>
 
-      <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#navMobile" aria-controls="navMobile" aria-label="Abrir menú">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+      <!-- Grupo móvil: Carrito SIEMPRE visible + hamburguesa -->
+      <div class="d-lg-none ms-auto d-flex align-items-center gap-2">
+        <a class="btn btn-outline-light btn-sm position-relative btn-cart-mobile" href="carrito.html" aria-label="Ir al carrito">
+          🛒 Carrito
+          <span id="cartCountMobileNav" class="badge rounded-pill bg-danger position-absolute" style="top:-6px; right:-6px;">0</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#navMobile" aria-controls="navMobile" aria-label="Abrir menú">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      </div>
 
+      <!-- Navegación + carrito desktop -->
       <div class="d-none d-lg-flex align-items-center ms-auto">
         <ul class="navbar-nav me-3">
-          <li class="nav-item"><a class="nav-link" href="#inicio" onclick="setActive(this)">INICIO</a></li>
-          <li class="nav-item"><a class="nav-link active" href="#tienda" onclick="setActive(this)">TIENDA</a></li>
+          <!-- INICIO activo por defecto -->
+          <li class="nav-item"><a class="nav-link active" href="#inicio" onclick="setActive(this)">INICIO</a></li>
+          <li class="nav-item"><a class="nav-link" href="#tienda" onclick="setActive(this)">TIENDA</a></li>
           <li class="nav-item"><a class="nav-link" href="#noticias" onclick="setActive(this)">NOTICIAS</a></li>
           <li class="nav-item"><a class="nav-link" href="#galeria" onclick="setActive(this)">GALERÍA</a></li>
           <li class="nav-item"><a class="nav-link" href="#sobre-mi" onclick="setActive(this)">SOBRE MÍ</a></li>
         </ul>
         <a class="btn btn-sm btn-outline-light position-relative" href="carrito.html" aria-label="Ir al carrito">
-          🛒 Carrito <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+          🛒 Carrito
+          <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
         </a>
       </div>
 
+      <!-- Offcanvas (móvil): solo links (sin carrito duplicado) -->
       <div class="offcanvas offcanvas-end text-bg-dark d-lg-none" tabindex="-1" id="navMobile" aria-labelledby="navMobileLabel">
         <div class="offcanvas-header">
           <h5 id="navMobileLabel" class="offcanvas-title">Menú</h5>
@@ -142,16 +157,12 @@
         </div>
         <div class="offcanvas-body">
           <ul class="navbar-nav text-end">
-            <li class="nav-item"><a class="nav-link" href="#inicio" onclick="collapseNav();setActive(this)">INICIO</a></li>
-            <li class="nav-item"><a class="nav-link active" href="#tienda" onclick="collapseNav();setActive(this)">TIENDA</a></li>
+            <li class="nav-item"><a class="nav-link active" href="#inicio" onclick="collapseNav();setActive(this)">INICIO</a></li>
+            <li class="nav-item"><a class="nav-link" href="#tienda" onclick="collapseNav();setActive(this)">TIENDA</a></li>
             <li class="nav-item"><a class="nav-link" href="#noticias" onclick="collapseNav();setActive(this)">NOTICIAS</a></li>
             <li class="nav-item"><a class="nav-link" href="#galeria" onclick="collapseNav();setActive(this)">GALERÍA</a></li>
             <li class="nav-item"><a class="nav-link" href="#sobre-mi" onclick="collapseNav();setActive(this)">SOBRE MÍ</a></li>
           </ul>
-          <hr class="border-secondary">
-          <a class="btn btn-outline-light w-100" href="carrito.html" aria-label="Ir al carrito">
-            🛒 Carrito <span id="cartCountMobile" class="badge bg-danger position-absolute" style="top:-8px; right:-8px;">0</span>
-          </a>
         </div>
       </div>
     </div>
@@ -410,7 +421,7 @@
         col.className = 'col-6 col-lg-3';
         const primary = BASE + p.file + EXT_UP;
         col.innerHTML = `
-          <article class="card h-100">
+          <article class="card h-100" data-pid="${p.id}">
             <div class="position-absolute m-2"><span class="badge ${p.tag==='Nuevo'?'badge-new':'badge-pop'}">${p.tag}</span></div>
             <img class="card-img-top" src="${primary}" alt="${p.name} con ilustración original" loading="lazy" onerror="imgFallback(this,'${p.file}')">
             <div class="card-body d-flex flex-column">
@@ -419,7 +430,7 @@
               <div class="sizes mb-3" role="group" aria-label="Talles disponibles">
                 ${sizeChip(p.id,'S')}${sizeChip(p.id,'M')}${sizeChip(p.id,'L')}${sizeChip(p.id,'XL')}
               </div>
-              <button class="btn btn-accent mt-auto" onclick="addToCart('${p.id}')" aria-label="Agregar ${p.name} al carrito">Agregar al carrito</button>
+              <button class="btn btn-accent mt-auto" data-pid="${p.id}" onclick="addToCart('${p.id}')" aria-label="Agregar ${p.name} al carrito">Agregar al carrito</button>
             </div>
           </article>`;
         grid.appendChild(col);
@@ -494,7 +505,8 @@
     // ---------- Carrito mínimo ----------
     const CART_KEY = 'espaciales_cart';
     const cartCountEl = document.getElementById('cartCount');
-    const cartCountElMobile = document.getElementById('cartCountMobile');
+    const cartCountElMobile = document.getElementById('cartCountMobile'); // (ya no existe, pero no molesta)
+    const cartCountElMobileNav = document.getElementById('cartCountMobileNav'); // NUEVO: botón fijo móvil
     const toastAdd  = new bootstrap.Toast(document.getElementById('cartToast'), { delay: 1400 });
     const toastSize = new bootstrap.Toast(document.getElementById('sizeToast'), { delay: 1400 });
     const getCart = () => { try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch { return []; } };
@@ -503,16 +515,31 @@
       const total = getCart().reduce((acc, it)=>acc+it.qty, 0);
       if (cartCountEl) cartCountEl.textContent = total;
       if (cartCountElMobile) cartCountElMobile.textContent = total;
+      if (cartCountElMobileNav) cartCountElMobileNav.textContent = total;
     };
+
     function addToCart(id){
       const product = PRODUCTS.find(p=>p.id===id); if(!product) return;
       const size = selectedSizes.get(id);
       if(!size){ toastSize.show(); return; }
+
+      // Detectar la imagen mostrada (con fallback aplicado)
+      const card = document.querySelector(`article[data-pid="${id}"]`);
+      let imgSrc = '';
+      if (card) {
+        const imgEl = card.querySelector('img.card-img-top');
+        if (imgEl) imgSrc = imgEl.currentSrc || imgEl.src || '';
+      }
+      if (!imgSrc) imgSrc = `${BASE}${product.file}${EXT_UP}`;
+
       const key = id + '::' + size;
       const cart = getCart();
       const idx = cart.findIndex(it=> (it.key===key));
       if(idx>-1) cart[idx].qty += 1;
-      else cart.push({ key, id, name: product.name, price: product.price, size, qty: 1 });
+      else cart.push({
+        key, id, name: product.name, price: product.price, size, qty: 1,
+        img: imgSrc, imgFull: imgSrc
+      });
       setCart(cart); toastAdd.show();
     }
 
