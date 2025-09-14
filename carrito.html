@@ -25,9 +25,7 @@
     .btn-outline-accent{ border:1px solid var(--accent); color:var(--accent); }
 
     /* Form */
-    .form-control, .form-select, .form-check-input{
-      background:#0b0b0b; color:#fff; border:1px solid #242424;
-    }
+    .form-control, .form-select, .form-check-input{ background:#0b0b0b; color:#fff; border:1px solid #242424; }
     .form-control::placeholder{ color:#8a8a8a; }
     .form-control:focus, .form-select:focus{ border-color:#333; box-shadow:0 0 0 .25rem rgba(199,249,204,.15); }
     .invalid-feedback{ color:#ffa5a5; }
@@ -44,12 +42,12 @@
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
     <div class="container">
-      <a id="brandToShop" class="navbar-brand d-flex align-items-center" href="tienda.html#inicio">
+      <a id="brandToShop" class="navbar-brand d-flex align-items-center" href="index.html#inicio">
         <!-- AHORA EN LA MISMA CARPETA -->
         <img src="logo.png" alt="Espaciales" style="height: 40px; max-height: 40px; width:auto;">
       </a>
       <div class="ms-auto">
-        <a id="backToShop" class="btn btn-sm btn-outline-light" href="tienda.html#tienda">🛍️ Volver a la tienda</a>
+        <a id="backToShop" class="btn btn-sm btn-outline-light" href="index.html#tienda">🛍️ Volver a la tienda</a>
       </div>
     </div>
   </nav>
@@ -58,7 +56,7 @@
     <h1 class="h3 mb-3">Tu carrito</h1>
 
     <div id="empty" class="alert alert-dark d-none">
-      Tu carrito está vacío. <a href="tienda.html#tienda">Explorá la tienda</a> y sumá tus favoritas.
+      Tu carrito está vacío. <a href="index.html#tienda">Explorá la tienda</a> y sumá tus favoritas.
     </div>
 
     <div id="cartWrap" class="row g-4">
@@ -361,7 +359,8 @@
         [fName,fEmail,fPhone,fCity,fPay,fNotes].forEach(el => el && el.classList.remove('is-invalid'));
       }
     }
-    document.querySelectorAll('a[href^="tienda.html"]').forEach(a=>{
+    // actualizado: ahora apunta a index.html
+    document.querySelectorAll('a[href^="index.html"]').forEach(a=>{
       a.addEventListener('click', clearOrderSummary, { capture:true });
     });
     window.addEventListener('pagehide', clearOrderSummary);
