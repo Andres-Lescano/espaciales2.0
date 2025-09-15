@@ -246,13 +246,15 @@
     // ==========================================================
     //                  CONFIG / PRODUCTOS
     // ==========================================================
-    const STANDARD_PRICE = 43000;
-    const POPULAR_PRICE  = 41000; // Popular un poco más barato
-    // A pedido: MUCHAS más "Populares". Regla: desde el 57 en adelante = "Nuevo", el resto = "Popular".
-    const NEW_FROM = 57;
+    const BASE_PRICE = 43000; // La mayoría a $43.000
+    // Solo ALGUNOS modelos serán "Nuevo" (editá este set a gusto)
+    const NEW_MODELS = new Set([57,58,60,61,68,72,90,104]);
 
-    // Si querés forzar populares puntuales además de la regla:
-    const POPULAR_EXTRAS = new Set([20,21,36,37,38,39,40,41]); // podés sumar más
+    // Si querés forzar precios distintos puntuales:
+    const PRICE_OVERRIDES = new Map([
+      // [n_modelo, precio],
+      // ej.: [60, 45000],
+    ]);
 
     // Directorios y patrones (incluye misma carpeta '')
     const PROD_DIRS     = ['', 'tienda/'];
@@ -262,16 +264,12 @@
     const PROD_EXTS     = ['webp','jpg','jpeg','png','WEBP','JPG','JPEG','PNG'];
 
     const money = n => new Intl.NumberFormat('es-AR',{ style:'currency',currency:'ARS',maximumFractionDigits:0 }).format(n);
-    const getPrice = p => Number(p.price) || 0;
 
-    function computeTag(n){
-      if (POPULAR_EXTRAS.has(n)) return 'Popular';
-      return (n >= NEW_FROM) ? 'Nuevo' : 'Popular';
-    }
-    function computePriceByTag(tag){
-      return tag === 'Popular' ? POPULAR_PRICE : STANDARD_PRICE;
-    }
+    // === Etiqueta/Precio según reglas pedidas ===
+    function computeTag(n){ return NEW_MODELS.has(n) ? 'Nuevo' : 'Popular'; }
+    function computePrice(n){ return PRICE_OVERRIDES.get(n) ?? BASE_PRICE; }
 
+    // === Carga robusta (verifica si existe) ===
     function tryLoad(src){
       return new Promise(resolve=>{
         const img = new Image();
@@ -313,20 +311,10 @@
       return null;
     }
 
-    // Skeleton mientras carga productos
-    function renderSkeleton(count=8){
-      const grid = document.getElementById('grid');
-      grid.innerHTML = '';
-      for(let i=0;i<count;i++){
-        const col = document.createElement('div');
-        col.className = 'col-6 col-lg-3';
-        col.innerHTML = `<div class="skeleton"><div class="ph"></div><div class="line" style="width:70%"></div><div class="line" style="width:40%"></div><div class="line" style="width:85%"></div></div>`;
-        grid.appendChild(col);
-      }
-    }
-
-    // Estado / render de productos
-    let PRODUCTS = [];
+    // ==========================================================
+    //           RENDER: tarjetas + fallback de imágenes
+    // ==========================================================
+    let PRODUCTS = []; // {id, n, name, price, tag, src, srcGuesses[]}
     const grid = document.getElementById('grid');
     const gridMoreWrap = document.getElementById('gridMoreWrap');
     const gridMoreBtnMore = document.getElementById('gridMoreBtnMore');
@@ -338,6 +326,30 @@
 
     function sizeChip(id, size){ return `<button type="button" class="size-chip" data-id="${id}" data-size="${size}" aria-pressed="false">${size}</button>`; }
     function markSelected(btn){ btn.classList.add('selected'); btn.setAttribute('aria-pressed','true'); }
+
+    function imgHTML(p){
+      // Guardamos posibles rutas en data-srcs para fallback inmediato sin esperar discovery
+      const chain = [p.src, ...(p.srcGuesses||[])].filter(Boolean);
+      const data = encodeURIComponent(JSON.stringify(chain));
+      return `<img class="card-img-top prod-img" data-srcs='${data}' alt="${p.name} con ilustración original" loading="lazy" decoding="async">`;
+    }
+
+    function hydrateImages(){
+      document.querySelectorAll('.prod-img').forEach(img=>{
+        if (img.dataset.hydrated) return;
+        img.dataset.hydrated = '1';
+        const srcs = JSON.parse(decodeURIComponent(img.getAttribute('data-srcs')||'[]'));
+        if (!srcs.length) return;
+        let idx = 0;
+        const tryNext = ()=>{
+          if (idx >= srcs.length) return; // se queda roto si ninguna existe
+          img.onerror = ()=>{ idx++; tryNext(); };
+          img.src = srcs[idx];
+        };
+        tryNext();
+      });
+    }
+
     function bindSizeSelectors(){
       grid.querySelectorAll('.size-chip').forEach(btn=>{
         btn.addEventListener('click', () => {
@@ -357,10 +369,10 @@
         col.innerHTML = `
           <article class="card h-100" data-pid="${p.id}">
             <div class="position-absolute m-2"><span class="badge ${p.tag==='Nuevo'?'badge-new':'badge-pop'}">${p.tag}</span></div>
-            <img class="card-img-top" src="${p.src}" alt="${p.name} con ilustración original" loading="lazy" decoding="async">
+            ${imgHTML(p)}
             <div class="card-body d-flex flex-column">
               <h3 class="product-title mb-1">${p.name}</h3>
-              <div class="price mb-2">${money(getPrice(p))}</div>
+              <div class="price mb-2">${money(p.price)}</div>
               <div class="sizes mb-3" role="group" aria-label="Talles disponibles">
                 ${sizeChip(p.id,'S')}${sizeChip(p.id,'M')}${sizeChip(p.id,'L')}${sizeChip(p.id,'XL')}${sizeChip(p.id,'XXL')}
               </div>
@@ -370,6 +382,7 @@
         grid.appendChild(col);
       }
       bindSizeSelectors();
+      hydrateImages(); // engancha el fallback de imágenes
       for(const [id, size] of selectedSizes){
         const btn = grid.querySelector(`.size-chip[data-id="${id}"][data-size="${size}"]`);
         if(btn) markSelected(btn);
@@ -385,12 +398,10 @@
       gridMoreBtnLess.setAttribute('aria-expanded', String(visible > PRODUCTS_VISIBLE_INIT));
     }
 
-    // Filtros
+    // === Filtros ===
     const searchInput = document.getElementById('searchInput');
     const tagSelect   = document.getElementById('tagSelect');
     const sortSelect  = document.getElementById('sortSelect');
-
-    function getPriceSafe(p){ return Number(p.price)||0; }
 
     function applyFilters(){
       const q = (searchInput.value || '').toLowerCase().trim();
@@ -404,8 +415,8 @@
 
       const byId = (a,b) => (a.id||'').localeCompare(b.id||'', undefined, {numeric:true, sensitivity:'base'});
 
-      if (ord==='priceAsc')  list.sort((a,b)=> (getPriceSafe(a) - getPriceSafe(b)) || byId(a,b));
-      if (ord==='priceDesc') list.sort((a,b)=> (getPriceSafe(b) - getPriceSafe(a)) || byId(a,b));
+      if (ord==='priceAsc')  list.sort((a,b)=> (a.price - b.price) || byId(a,b));
+      if (ord==='priceDesc') list.sort((a,b)=> (b.price - a.price) || byId(a,b));
 
       currentFiltered = list;
       productsVisible = Math.min(PRODUCTS_VISIBLE_INIT, list.length);
@@ -413,8 +424,7 @@
       updateMoreProductsVisibility(list.length, productsVisible);
     }
 
-    // Listeners que faltaban para que el filtrado funcione inmediatamente
-    const debounce = (fn, ms=150) => { let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); }; };
+    const debounce = (fn, ms=120) => { let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); }; };
     searchInput.addEventListener('input', debounce(applyFilters, 120));
     tagSelect.addEventListener('change', applyFilters);
     sortSelect.addEventListener('change', applyFilters);
@@ -437,7 +447,7 @@
       applyFilters();
     }
 
-    // Carrito simple
+    // === Carrito simple ===
     const CART_KEY = 'espaciales_cart';
     const cartCountEl           = document.getElementById('cartCount');
     const cartCountElMobileNav  = document.getElementById('cartCountMobileNav');
@@ -458,136 +468,172 @@
       const cart = getCart();
       const idx = cart.findIndex(it=> (it.key===key));
       if(idx>-1) cart[idx].qty += 1;
-      else cart.push({ key, id, name: product.name, price: getPrice(product), size, qty: 1, img: product.src, imgFull: product.src });
+      else cart.push({ key, id, name: product.name, price: product.price, size, qty: 1, img: product.src || (product.srcGuesses?.[0]||''), imgFull: product.src || (product.srcGuesses?.[0]||'') });
       setCart(cart); toastAdd.show();
     }
 
     // ==========================================================
-    //                  GALERÍA (mismo folder soportado)
+    //        CARGA INSTANTÁNEA: "ola 1" optimista (sin esperar)
     // ==========================================================
-    const GAL_DIRS  = ['', 'galeria/','Galeria/','GALERIA/']; // '' = misma carpeta
-    const GAL_EXTS  = ['webp','jpg','jpeg','png','JPG','PNG','WEBP','JPEG'];
-    const GAL_COUNT = 60;
-    const GALLERY_STATIC_FILES = []; // ej: ['foto1.jpg','foto2.png'] si querés forzarlas
-    let GALLERY_SRCS = [];
-    let galleryVisible = 999; // mostrar TODO de entrada
+    function initialWaveNumbers(){
+      // Priorizamos 57+ (por tu flujo) y agregamos algunos bajos por si existen.
+      const hi = Array.from({length: 20}, (_,i)=> 57+i); // 57..76
+      const lo = Array.from({length: 12}, (_,i)=> i+1);  // 1..12
+      return [...hi, ...lo];
+    }
 
-    const GAL_BASES = (i) => {
-      const pad = String(i).padStart(2,'0');
+    function guessesFor(n){
+      // Intentos directos comunes (sin verificación) — aparecen INSTANTÁNEO y 
+      // el fallback de <img> irá probando cadenas si alguna falta
       return [
-        `nuevas (${i})`, `nuevas (${pad})`,
-        `nueva (${i})`,  `nueva (${pad})`,
-        `galeria (${i})`, `galeria-${i}`, `galeria-${pad}`,
-        `gallery (${i})`, `gallery (${pad})`, `gallery-${i}`, `gallery-${pad}`,
-        `gal (${i})`, `gal-${i}`, `img-galeria-${i}`
+        `modelos (${n}).webp`,
+        `modelos (${n}).jpg`,
+        `modelos (${n}).png`,
+        `modelo (${n}).jpg`,
+        `Remera ${n}.jpg`,
+        `remera ${n}.jpg`
       ];
-    };
-
-    async function prepareGallerySources(){
-      const out = [];
-      for (let i = 1; i <= GAL_COUNT; i++){
-        let src = null;
-        outer:
-        for (const dir of GAL_DIRS){
-          for (const base of GAL_BASES(i)){
-            for (const ext of GAL_EXTS){
-              const cand = `${dir}${base}.${ext}`;
-              const ok = await tryLoad(cand);
-              if (ok){ src = ok; break outer; }
-            }
-          }
-        }
-        if (src) out.push(src);
-      }
-      if (out.length === 0 && GALLERY_STATIC_FILES.length) return [...GALLERY_STATIC_FILES];
-      return out;
     }
 
-    function buildGallery(visible){
-      const galeriaGrid = document.getElementById('galeriaGrid');
-      const galeriaMoreWrap = document.getElementById('galeriaMoreWrap');
-      const galeriaMoreBtnMore = document.getElementById('galeriaMoreBtnMore');
-      const galeriaMoreBtnLess = document.getElementById('galeriaMoreBtnLess');
-
-      galeriaGrid.innerHTML = '';
-      const total = GALLERY_SRCS.length;
-      if (!total){
-        galeriaGrid.innerHTML = '<p class="text-secondary">Agregá imágenes en el mismo folder (o /galeria) con nombres tipo <code>nuevas (1).jpg</code>, <code>galeria-1.png</code>, o listalas en <code>GALLERY_STATIC_FILES</code>.</p>';
-        galeriaMoreWrap.style.display = 'none';
-        return;
-      }
-      const max = Math.min(visible, total);
-      for (let i = 0; i < max; i++) {
-        const src = GALLERY_SRCS[i];
-        const col = document.createElement('div');
-        col.className = 'col-6 col-md-3';
-        col.innerHTML = `
-          <div class="gallery-frame">
-            <img class="gallery-img" src="${src}" alt="Galería Espaciales ${i+1}" loading="lazy" decoding="async">
-          </div>`;
-        galeriaGrid.appendChild(col);
-      }
-      // Botones: arrancamos mostrando TODO; permitimos "ver menos" si hay más de 4
-      const showControls = total > 4;
-      galeriaMoreWrap.style.display = showControls ? 'block' : 'none';
-      galeriaMoreBtnMore.style.display = (max < total) ? 'inline-block' : 'none';
-      galeriaMoreBtnLess.style.display = showControls ? 'inline-block' : 'none';
-
-      galeriaMoreBtnMore.onclick = () => { galleryVisible = GALLERY_SRCS.length; buildGallery(galleryVisible); };
-      galeriaMoreBtnLess.onclick = () => {
-        galleryVisible = 4; buildGallery(galleryVisible);
-        document.getElementById('galeria').scrollIntoView({ behavior:'smooth', block:'start' });
-      };
+    function seedInitialWave(){
+      const nums = initialWaveNumbers();
+      const now = Date.now();
+      const seeded = nums.map(n=>({
+        id: 'r'+n,
+        n,
+        name: 'Remera '+n,
+        price: computePrice(n),
+        tag: computeTag(n),
+        src: null,                 // aún no verificado
+        srcGuesses: guessesFor(n).map(s=> encodeURI(s + `?v=${now}`))
+      }));
+      // Merge sin duplicar si luego llega discovery
+      const byId = new Map(PRODUCTS.map(p=>[p.id,p]));
+      for (const p of seeded){ if (!byId.has(p.id)) byId.set(p.id, p); }
+      PRODUCTS = Array.from(byId.values()).sort((a,b)=> a.n - b.n);
+      applyFilters(); // ¡instantáneo!
     }
 
     // ==========================================================
-    //                 DESCUBRIMIENTO EN PARALELO (Tienda)
+    //         DESCUBRIMIENTO COMPLETO (verifica y corrige src)
     // ==========================================================
     async function discoverProductsParallel(){
       const tasks = Array.from({length: PROD_MAX_INDEX}, (_,i)=> i+1);
-      const found = [];
-      let idx = 0;
+      let idx = 0; const foundMap = new Map();
       function next(){ const n = tasks[idx++]; return n===undefined ? null : n; }
       async function worker(){
         for(;;){
           const n = next(); if (n===null) break;
           const src = await checkFirstExistingForNumber(n);
-          if (src){ found.push({ n, src }); if (found.length % 3 === 0) updateProducts(found); }
+          if (src){ foundMap.set(n, src); updateProductsFromFound(n, src); }
         }
       }
       const workers = Array.from({length: 8}, ()=>worker());
       await Promise.all(workers);
-      return found;
     }
 
-    function updateProducts(discovered){
-      PRODUCTS = discovered
-        .sort((a,b)=> a.n - b.n)
-        .map(({n, src}) => {
-          const tag = computeTag(n);
-          return {
-            id: 'r' + n,
-            name: 'Remera ' + n,
-            price: computePriceByTag(tag),
-            tag,
-            src
-          };
-        });
-      applyFilters();
+    function updateProductsFromFound(n, src){
+      // Si ya estaba sembrado, reemplazamos src y limpiamos guesses
+      const id = 'r'+n;
+      const i = PRODUCTS.findIndex(p=>p.id===id);
+      if (i>-1){
+        PRODUCTS[i].src = src;
+        PRODUCTS[i].srcGuesses = [];
+      } else {
+        PRODUCTS.push({ id, n, name:'Remera '+n, price: computePrice(n), tag: computeTag(n), src, srcGuesses: [] });
+        PRODUCTS.sort((a,b)=> a.n - b.n);
+      }
+      // Re-render suave manteniendo filtros y selección
+      const q = (searchInput.value || '').toLowerCase().trim();
+      const tag = (tagSelect.value || 'all').trim();
+      const ord = (sortSelect.value || 'default').trim();
+      let list = PRODUCTS.filter(p => (tag==='all' || p.tag===tag) && (q==='' || p.name.toLowerCase().includes(q)) );
+      const byId = (a,b) => (a.id||'').localeCompare(b.id||'', undefined, {numeric:true, sensitivity:'base'});
+      if (ord==='priceAsc')  list.sort((a,b)=> (a.price - b.price) || byId(a,b));
+      if (ord==='priceDesc') list.sort((a,b)=> (b.price - a.price) || byId(a,b));
+      currentFiltered = list;
+      render(list.slice(0, productsVisible));
+      updateMoreProductsVisibility(list.length, productsVisible);
     }
 
     // ---------- Init ----------
     (async () => {
-      renderSkeleton(8);
-
-      // Tienda
-      const discovered = await discoverProductsParallel();
-      updateProducts(discovered);
+      // 1) Ola inicial instantánea (sin esperar red):
+      seedInitialWave();
       updateCartCount();
 
-      // Galería
-      GALLERY_SRCS = await prepareGallerySources();
-      buildGallery(galleryVisible);
+      // 2) Descubrimiento completo en segundo plano (corrige rutas reales):
+      discoverProductsParallel();
+
+      // 3) Galería (opcionalmente puede tardar)
+      try {
+        const { srclist, builder } = await (async function(){
+          const GAL_DIRS  = ['', 'galeria/','Galeria/','GALERIA/'];
+          const GAL_EXTS  = ['webp','jpg','jpeg','png','JPG','PNG','WEBP','JPEG'];
+          const GAL_COUNT = 60;
+          async function prepareGallerySources(){
+            const out = [];
+            for (let i = 1; i <= GAL_COUNT; i++){
+              let src = null;
+              outer:
+              for (const dir of GAL_DIRS){
+                for (const base of [
+                  `nuevas (${i})`, `nuevas (${String(i).padStart(2,'0')})`,
+                  `nueva (${i})`,  `nueva (${String(i).padStart(2,'0')})`,
+                  `galeria (${i})`, `galeria-${i}`, `galeria-${String(i).padStart(2,'0')}`,
+                  `gallery (${i})`, `gallery (${String(i).padStart(2,'0')})`, `gallery-${i}`, `gallery-${String(i).padStart(2,'0')}`,
+                  `gal (${i})`, `gal-${i}`, `img-galeria-${i}`
+                ]){
+                  for (const ext of GAL_EXTS){
+                    const cand = `${dir}${base}.${ext}`;
+                    const ok = await tryLoad(cand);
+                    if (ok){ src = ok; break outer; }
+                  }
+                }
+              }
+              if (src) out.push(src);
+            }
+            return out;
+          }
+          function buildGallery(srclist){
+            const galeriaGrid = document.getElementById('galeriaGrid');
+            const galeriaMoreWrap = document.getElementById('galeriaMoreWrap');
+            const galeriaMoreBtnMore = document.getElementById('galeriaMoreBtnMore');
+            const galeriaMoreBtnLess = document.getElementById('galeriaMoreBtnLess');
+            galeriaGrid.innerHTML = '';
+            const total = srclist.length;
+            if (!total){
+              galeriaGrid.innerHTML = '<p class="text-secondary">Agregá imágenes en el mismo folder (o /galeria) con nombres tipo <code>nuevas (1).jpg</code> o <code>galeria-1.png</code>.</p>';
+              galeriaMoreWrap.style.display = 'none';
+              return;
+            }
+            const max = total; // mostrar todas
+            for (let i = 0; i < max; i++) {
+              const src = srclist[i];
+              const col = document.createElement('div');
+              col.className = 'col-6 col-md-3';
+              col.innerHTML = `
+                <div class="gallery-frame">
+                  <img class="gallery-img" src="${src}" alt="Galería Espaciales ${i+1}" loading="lazy" decoding="async">
+                </div>`;
+              galeriaGrid.appendChild(col);
+            }
+            galeriaMoreWrap.style.display = total > 4 ? 'block' : 'none';
+            galeriaMoreBtnMore.style.display = 'none';
+            galeriaMoreBtnLess.style.display = total > 4 ? 'inline-block' : 'none';
+            galeriaMoreBtnLess.onclick = () => {
+              galeriaGrid.querySelectorAll('.col-6.col-md-3').forEach((el,idx)=>{ if (idx>=4) el.remove(); });
+              galeriaMoreBtnMore.style.display = 'inline-block';
+              galeriaMoreBtnLess.style.display = 'none';
+              document.getElementById('galeria').scrollIntoView({ behavior:'smooth', block:'start' });
+            };
+            galeriaMoreBtnMore.onclick = () => buildGallery(srclist);
+          }
+          const srclist = await prepareGallerySources();
+          return { srclist, builder: buildGallery };
+        })();
+        builder(srclist);
+      } catch {}
     })();
 
     // Exponer helpers
