@@ -13,7 +13,7 @@
   <link rel="preload" as="image" href="gato.PNG">
   <link rel="preload" as="image" href="alien.jpg">
   <link rel="preload" as="image" href="valen3.jpg">
-  <link rel="preload" as="video" href="video.MOV" type="video/quicktime">
+  <link rel="preload" as="video"  href="video.MOV" type="video/quicktime">
 
   <link rel="stylesheet" href="archivo.css">
 </head>
@@ -120,6 +120,7 @@
   <!-- ===== Galería ===== -->
   <section id="galeria" class="container pb-5">
     <h2 class="h3 mb-3">Galería</h2>
+
     <div id="galeriaGrid" class="row g-3"></div>
     <div id="galeriaMoreWrap" class="more-wrap text-center my-4" style="display:none">
       <div class="more-actions">
@@ -263,17 +264,14 @@
     const getPrice = p => Number(p.price) || 0;
     function computeTag(n){ return NEW_MODELS.has(n) ? 'Nuevo' : 'Popular'; }
 
-    // ======= Carga de archivos: más rápida y sin cache-busting =======
     function tryLoad(src){
       return new Promise(resolve=>{
         const img = new Image();
         let done=false; const finish=ok=>{ if(done) return; done=true; resolve(ok?src:null); };
-        const t=setTimeout(()=>finish(false), 1500);  // timeout más corto
+        const t=setTimeout(()=>finish(false), 6000);
         img.onload=()=>{ clearTimeout(t); finish(true); };
         img.onerror=()=>{ clearTimeout(t); finish(false); };
-        img.decoding = 'async';
-        img.loading = 'eager';
-        img.src = src; // ¡sin ?v=Date.now() para permitir caché del navegador!
+        img.src = encodeURI(src + (src.includes('?')?'&':'?') + 'v=' + Date.now());
       });
     }
 
@@ -301,7 +299,7 @@
         for(const ext of PROD_EXTS){
           const url = `${base}.${ext}`;
           const ok = await tryLoad(url);
-          if (ok) return ok;
+          if (ok) return ok.replace(/[?&]v=\d+$/, '');
         }
       }
       return null;
@@ -314,11 +312,8 @@
     const gridMoreWrap = document.getElementById('gridMoreWrap');
     const gridMoreBtnMore = document.getElementById('gridMoreBtnMore');
     const gridMoreBtnLess = document.getElementById('gridMoreBtnLess');
-
-    // Primeras 4 instantáneas
-    const PRODUCTS_VISIBLE_INIT = 4;
-    let productsVisible = 0;
-
+    const PRODUCTS_VISIBLE_INIT = 8;
+    let productsVisible = PRODUCTS_VISIBLE_INIT;
     let currentFiltered = [];
     const selectedSizes = new Map();
 
@@ -327,76 +322,64 @@
       PRODUCT_MAP.set(n, {
         id: 'r'+n,
         name: 'Remera '+n,
-        price: priceFor(n),
+        price: priceFor(n), // <<<<<<<<<<<<<< precio según overrides
         tag,
         src
       });
       PRODUCTS = Array.from(PRODUCT_MAP.entries())
         .sort((a,b)=> a[0]-b[0])
         .map(([,p])=>p);
-      scheduleApplyFilters(); // coalescamos renders para evitar trabas
+      applyFilters();
     }
 
-    // --- UI helpers ---
     function sizeChip(id, size){ return `<button type="button" class="size-chip" data-id="${id}" data-size="${size}" aria-pressed="false">${size}</button>`; }
     function markSelected(btn){ btn.classList.add('selected'); btn.setAttribute('aria-pressed','true'); }
-
-    // Delegación: un solo listener para todos los chips
-    grid.addEventListener('click', (ev)=>{
-      const btn = ev.target.closest('.size-chip');
-      if(!btn) return;
-      const id = btn.dataset.id, size = btn.dataset.size;
-      btn.closest('.sizes').querySelectorAll('.size-chip').forEach(b=>{ b.classList.remove('selected'); b.setAttribute('aria-pressed','false'); });
-      markSelected(btn); selectedSizes.set(id, size);
-    });
-
-    // ------ Render incremental ------
-    function productCardHTML(p){
-      return `
-        <article class="card h-100" data-pid="${p.id}">
-          <div class="position-absolute m-2"><span class="badge ${p.tag==='Nuevo'?'badge-new':'badge-pop'}">${p.tag}</span></div>
-          <img class="card-img-top" src="${p.src}" alt="${p.name} con ilustración original" loading="lazy" decoding="async">
-          <div class="card-body d-flex flex-column">
-            <h3 class="product-title mb-1">${p.name}</h3>
-            <div class="price mb-2">${money(getPrice(p))}</div>
-            <div class="sizes mb-3" role="group" aria-label="Talles disponibles">
-              ${sizeChip(p.id,'S')}${sizeChip(p.id,'M')}${sizeChip(p.id,'L')}${sizeChip(p.id,'XL')}${sizeChip(p.id,'XXL')}
-            </div>
-            <button class="btn btn-accent mt-auto" type="button" onclick="addToCart('${p.id}')" aria-label="Agregar ${p.name} al carrito">Agregar al carrito</button>
-          </div>
-        </article>`;
+    function bindSizeSelectors(){
+      grid.querySelectorAll('.size-chip').forEach(btn=>{
+        btn.addEventListener('click', (ev) => {
+          ev.preventDefault(); ev.stopPropagation();
+          const id = btn.dataset.id, size = btn.dataset.size;
+          btn.closest('.sizes').querySelectorAll('.size-chip').forEach(b=>{ b.classList.remove('selected'); b.setAttribute('aria-pressed','false'); });
+          markSelected(btn); selectedSizes.set(id, size);
+        });
+      });
     }
 
-    function clearGrid(){
+    function render(list){
       grid.innerHTML = '';
-      productsVisible = 0;
-    }
-
-    function appendRange(list, start, end){
-      const frag = document.createDocumentFragment();
-      for(let i=start; i<end; i++){
-        const p = list[i];
+      if(!list.length){ grid.innerHTML = '<p class="text-center text-secondary">Cargando diseños…</p>'; return; }
+      for(const p of list){
         const col = document.createElement('div');
         col.className = 'col-6 col-lg-3';
-        col.innerHTML = productCardHTML(p);
-        frag.appendChild(col);
+        col.innerHTML = `
+          <article class="card h-100" data-pid="${p.id}">
+            <div class="position-absolute m-2"><span class="badge ${p.tag==='Nuevo'?'badge-new':'badge-pop'}">${p.tag}</span></div>
+            <img class="card-img-top" src="${p.src}" alt="${p.name} con ilustración original" loading="eager" decoding="async">
+            <div class="card-body d-flex flex-column">
+              <h3 class="product-title mb-1">${p.name}</h3>
+              <div class="price mb-2">${money(getPrice(p))}</div>
+              <div class="sizes mb-3" role="group" aria-label="Talles disponibles">
+                ${sizeChip(p.id,'S')}${sizeChip(p.id,'M')}${sizeChip(p.id,'L')}${sizeChip(p.id,'XL')}${sizeChip(p.id,'XXL')}
+              </div>
+              <button class="btn btn-accent mt-auto" type="button" onclick="addToCart('${p.id}')" aria-label="Agregar ${p.name} al carrito">Agregar al carrito</button>
+            </div>
+          </article>`;
+        grid.appendChild(col);
       }
-      grid.appendChild(frag);
-      // Restaurar selección previa si existe
+      bindSizeSelectors();
       for(const [id, size] of selectedSizes){
         const btn = grid.querySelector(`.size-chip[data-id="${id}"][data-size="${size}"]`);
         if(btn) markSelected(btn);
       }
-      productsVisible = end;
     }
 
-    function updateMoreProductsVisibility(total){
+    function updateMoreProductsVisibility(total, visible){
       const canExpand = total > PRODUCTS_VISIBLE_INIT;
       gridMoreWrap.style.display = canExpand ? 'block' : 'none';
-      gridMoreBtnMore.style.display = (productsVisible < total) ? 'inline-block' : 'none';
-      gridMoreBtnLess.style.display = (productsVisible > PRODUCTS_VISIBLE_INIT) ? 'inline-block' : 'none';
-      gridMoreBtnMore.setAttribute('aria-expanded', String(productsVisible < total));
-      gridMoreBtnLess.setAttribute('aria-expanded', String(productsVisible > PRODUCTS_VISIBLE_INIT));
+      gridMoreBtnMore.style.display = (visible < total) ? 'inline-block' : 'none';
+      gridMoreBtnLess.style.display = (visible > PRODUCTS_VISIBLE_INIT) ? 'inline-block' : 'none';
+      gridMoreBtnMore.setAttribute('aria-expanded', String(visible < total));
+      gridMoreBtnLess.setAttribute('aria-expanded', String(visible > PRODUCTS_VISIBLE_INIT));
     }
 
     // ---------------- Filtros ----------------
@@ -422,22 +405,12 @@
       if (ord==='priceDesc') list.sort((a,b)=> (getPriceSafe(b) - getPriceSafe(a)) || byId(a,b));
 
       currentFiltered = list;
-
-      // Render inicial (rápido: 4)
-      clearGrid();
-      const initial = Math.min(PRODUCTS_VISIBLE_INIT, list.length);
-      if (initial === 0){
-        grid.innerHTML = '<p class="text-center text-secondary">Cargando diseños…</p>';
-        updateMoreProductsVisibility(0);
-        return;
-        }
-      appendRange(list, 0, initial);
-      updateMoreProductsVisibility(list.length);
+      productsVisible = Math.min(PRODUCTS_VISIBLE_INIT, list.length);
+      render(list.slice(0, productsVisible));
+      updateMoreProductsVisibility(list.length, productsVisible);
     }
 
     const debounce = (fn, ms=150) => { let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); }; };
-    const scheduleApplyFilters = debounce(applyFilters, 80);
-
     searchInput.addEventListener('input', debounce(applyFilters, 120));
     tagSelect.addEventListener('change', applyFilters);
     sortSelect.addEventListener('change', applyFilters);
@@ -448,24 +421,18 @@
     gridMoreBtnMore?.addEventListener('click', (ev) => {
       stopAndNoNav(ev);
       const y = window.scrollY;
-      const total = currentFiltered.length;
-      const nextEnd = Math.min(productsVisible + 4, total);
-      if (nextEnd > productsVisible){
-        appendRange(currentFiltered, productsVisible, nextEnd); // sólo agrega lo nuevo
-        updateMoreProductsVisibility(total);
-      }
+      productsVisible = Math.min(productsVisible + 4, currentFiltered.length);
+      render(currentFiltered.slice(0, productsVisible));
+      updateMoreProductsVisibility(currentFiltered.length, productsVisible);
       window.scrollTo(0, y);
     });
 
     gridMoreBtnLess?.addEventListener('click', (ev) => {
       stopAndNoNav(ev);
       const y = window.scrollY;
-      // Volvemos al mínimo redibujando sólo las primeras 4
-      clearGrid();
-      const total = currentFiltered.length;
-      const initial = Math.min(PRODUCTS_VISIBLE_INIT, total);
-      if (initial > 0) appendRange(currentFiltered, 0, initial);
-      updateMoreProductsVisibility(total);
+      productsVisible = Math.min(PRODUCTS_VISIBLE_INIT, currentFiltered.length);
+      render(currentFiltered.slice(0, productsVisible));
+      updateMoreProductsVisibility(currentFiltered.length, productsVisible);
       window.scrollTo(0, y);
       document.getElementById('tienda').scrollIntoView({ behavior:'smooth', block:'start' });
     });
@@ -509,7 +476,7 @@
     // ---------------- Galería ----------------
     const GAL_COUNT = 8;
     const GAL_EXTS  = ['jpg','png','jpeg','JPG','PNG','JPEG'];
-    const GAL_NAME_BASES = ['nuevas', 'nuevo', 'nueva']; // acepta "nuevo (1).jpg", etc.
+    const GAL_NAME_BASES = ['nuevas', 'nuevo', 'nueva'];
     let GALLERY_SRCS = [];
     let galleryVisible = 4;
 
@@ -540,7 +507,7 @@
       const total = GALLERY_SRCS.length;
 
       if(!total){
-        galeriaGrid.innerHTML = '<p class="text-secondary">No se encontraron imágenes. Usá nombres como <code>nuevo (1).jpg</code>, <code>nueva (1).jpg</code> o <code>nuevas (1).jpg</code> hasta (8).</p>';
+        galeriaGrid.innerHTML = '<p class="text-secondary">No se encontraron imágenes. Usá nombres como <code>nuevas (1).jpg</code>, <code>nueva (1).jpg</code> o <code>nuevo (1).jpg</code> hasta (8).</p>';
         galeriaMoreWrap.style.display = 'none';
         return;
       }
@@ -571,13 +538,11 @@
     }
 
     // ---------------- Descubrimiento de productos ----------------
-    const pause = (ms)=> new Promise(r=>setTimeout(r, ms));
-    const yieldToUI = ()=> new Promise(r=>requestAnimationFrame(()=>r()));
-
     async function discoverPreferredFirst(){
       for (const n of PREFERRED_FIRST){
-        const src = await checkFirstExistingForNumber(n);
-        if (src) upsertProduct(n, src);
+        checkFirstExistingForNumber(n).then(src=>{
+          if (src) upsertProduct(n, src);
+        });
       }
     }
 
@@ -586,37 +551,23 @@
       const tasks = Array.from({length: PROD_MAX_INDEX}, (_,i)=> i+1).filter(n=> !preferredSet.has(n));
       let idx = 0;
       function next(){ const n = tasks[idx++]; return n===undefined ? null : n; }
-
-      const WORKERS = 2;                   // menos presión a la red/CPU
-      const BATCH   = 8;                   // ceder cada N ítems
-
       async function worker(){
-        let processed = 0;
         for(;;){
           const n = next(); if (n===null) break;
           const src = await checkFirstExistingForNumber(n);
           if (src) upsertProduct(n, src);
-          processed++;
-          if (processed % BATCH === 0){ await yieldToUI(); }
         }
       }
-      // Lanzamos sin bloquear
-      for(let i=0;i<WORKERS;i++) worker();
+      const workers = Array.from({length: 6}, ()=>worker());
+      await Promise.all(workers);
     }
 
     // ---------- Init ----------
     (async () => {
-      // Construye UI vacía (placeholders) y luego llena rápido
+      discoverPreferredFirst();
+      discoverRestInBackground();
       updateCartCount();
 
-      // Descubre primero modelos prioritarios para que haya 4 instantáneos
-      await discoverPreferredFirst();
-      applyFilters(); // asegura primer render con los que haya
-
-      // Resto en background (suave, no bloquea)
-      discoverRestInBackground();
-
-      // Galería
       GALLERY_SRCS = await prepareGallerySources();
       buildGallery(galleryVisible);
     })();
