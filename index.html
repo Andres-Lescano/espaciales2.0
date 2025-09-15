@@ -595,7 +595,7 @@
             }
             return out;
           }
-          function buildGallery(srclist){
+          function buildGallery(srclist, showAll=false){
             const galeriaGrid = document.getElementById('galeriaGrid');
             const galeriaMoreWrap = document.getElementById('galeriaMoreWrap');
             const galeriaMoreBtnMore = document.getElementById('galeriaMoreBtnMore');
@@ -607,27 +607,29 @@
               galeriaMoreWrap.style.display = 'none';
               return;
             }
-            const max = total; // mostrar todas
+            const max = showAll ? total : Math.min(4, total); // 4 al inicio para carga rápida
             for (let i = 0; i < max; i++) {
               const src = srclist[i];
               const col = document.createElement('div');
               col.className = 'col-6 col-md-3';
+              // Primeras 4 con prioridad alta para que carguen rápido
+              const eager = i < 4 ? ' fetchpriority="high" loading="eager"' : ' loading="lazy"';
               col.innerHTML = `
                 <div class="gallery-frame">
-                  <img class="gallery-img" src="${src}" alt="Galería Espaciales ${i+1}" loading="lazy" decoding="async">
+                  <img class="gallery-img" src="${src}" alt="Galería Espaciales ${i+1}" decoding="async"${eager}>
                 </div>`;
               galeriaGrid.appendChild(col);
             }
-            galeriaMoreWrap.style.display = total > 4 ? 'block' : 'none';
-            galeriaMoreBtnMore.style.display = 'none';
-            galeriaMoreBtnLess.style.display = total > 4 ? 'inline-block' : 'none';
+            const showControls = total > 4;
+            galeriaMoreWrap.style.display = showControls ? 'block' : 'none';
+            galeriaMoreBtnMore.style.display = (!showAll && showControls) ? 'inline-block' : 'none';
+            galeriaMoreBtnLess.style.display = (showAll && showControls) ? 'inline-block' : 'none';
+
+            galeriaMoreBtnMore.onclick = () => buildGallery(srclist, true);
             galeriaMoreBtnLess.onclick = () => {
-              galeriaGrid.querySelectorAll('.col-6.col-md-3').forEach((el,idx)=>{ if (idx>=4) el.remove(); });
-              galeriaMoreBtnMore.style.display = 'inline-block';
-              galeriaMoreBtnLess.style.display = 'none';
+              buildGallery(srclist, false);
               document.getElementById('galeria').scrollIntoView({ behavior:'smooth', block:'start' });
             };
-            galeriaMoreBtnMore.onclick = () => buildGallery(srclist);
           }
           const srclist = await prepareGallerySources();
           return { srclist, builder: buildGallery };
