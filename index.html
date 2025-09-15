@@ -15,7 +15,7 @@
   <link rel="preload" as="image" href="valen3.jpg">
   <link rel="preload" as="video"  href="video.MOV" type="video/quicktime">
 
-<link rel="stylesheet" href="archivo.css">
+  <link rel="stylesheet" href="archivo.css">
 </head>
 <body>
   <!-- Navbar -->
@@ -41,7 +41,6 @@
         <ul class="navbar-nav me-3">
           <li class="nav-item"><a class="nav-link active" href="#inicio" onclick="setActive(this)">INICIO</a></li>
           <li class="nav-item"><a class="nav-link" href="#tienda" onclick="setActive(this)">TIENDA</a></li>
-          <li class="nav-item"><a class="nav-link" href="#noticias" onclick="setActive(this)">NOTICIAS</a></li>
           <li class="nav-item"><a class="nav-link" href="#galeria" onclick="setActive(this)">GALERÍA</a></li>
           <li class="nav-item"><a class="nav-link" href="#sobre-mi" onclick="setActive(this)">SOBRE MÍ</a></li>
         </ul>
@@ -61,7 +60,6 @@
           <ul class="navbar-nav text-end">
             <li class="nav-item"><a class="nav-link active" href="#inicio" onclick="collapseNav();setActive(this)">INICIO</a></li>
             <li class="nav-item"><a class="nav-link" href="#tienda" onclick="collapseNav();setActive(this)">TIENDA</a></li>
-            <li class="nav-item"><a class="nav-link" href="#noticias" onclick="collapseNav();setActive(this)">NOTICIAS</a></li>
             <li class="nav-item"><a class="nav-link" href="#galeria" onclick="collapseNav();setActive(this)">GALERÍA</a></li>
             <li class="nav-item"><a class="nav-link" href="#sobre-mi" onclick="collapseNav();setActive(this)">SOBRE MÍ</a></li>
           </ul>
@@ -120,18 +118,6 @@
       </div>
     </div>
   </main>
-
-  <hr class="about-hr">
-
-  <!-- ===== Noticias ===== -->
-  <section id="noticias" class="container pb-5">
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-      <h2 class="h3 m-0">Noticias</h2>
-      <a class="btn btn-accent" href="https://instagram.com/e.spaciales" target="_blank" rel="noopener">Seguí @e.spaciales</a>
-    </div>
-    <p class="text-secondary mb-4">Lo último y más llamativo de nuestro Instagram.</p>
-    <div id="newsGrid" class="row g-4"></div>
-  </section>
 
   <hr class="about-hr">
 
@@ -456,72 +442,6 @@
     }
 
     // ==========================================================
-    //                  NOTICIAS (mismo folder soportado)
-    // ==========================================================
-    const NEWS_DIRS = ['', 'noticias/']; // '' = misma carpeta que el HTML
-    const NEWS_MAX_INDEX = 100;
-    const NEWS_EXTS = ['webp','jpg','jpeg','png','JPG','PNG','WEBP','JPEG'];
-    const NEWS_STATIC_FILES = []; // ej: ['post1.jpg','post2.png'] si querés forzarlas
-
-    const NEWS_BASES = (n) => {
-      const pad = String(n).padStart(2,'0');
-      return [
-        `news-${n}`, `news-${pad}`, `news (${n})`, `news (${pad})`,
-        `noticia-${n}`, `noticia (${n})`,
-        `noticias-${n}`, `noticias (${n})`
-      ];
-    };
-
-    async function discoverNews(){
-      const items = [];
-      for (let n = NEWS_MAX_INDEX; n >= 1; n--){
-        let srcFound = null;
-        outer:
-        for (const dir of NEWS_DIRS){
-          for (const base of NEWS_BASES(n)){
-            for (const ext of NEWS_EXTS){
-              const cand = `${dir}${base}.${ext}`;
-              const ok = await tryLoad(cand);
-              if (ok){ srcFound = ok; break outer; }
-            }
-          }
-        }
-        if (srcFound) items.push({ n, src: srcFound });
-      }
-      if (items.length === 0 && NEWS_STATIC_FILES.length){
-        NEWS_STATIC_FILES.forEach((src, i) => items.push({ n: i+1, src }));
-      }
-      return items;
-    }
-
-    function buildNewsCards(items){
-      const grid = document.getElementById('newsGrid');
-      if(!grid) return;
-      grid.innerHTML = '';
-      if(items.length===0){
-        grid.innerHTML = `<p class="text-secondary">Poné imágenes (mismo folder o /noticias) con nombres tipo <strong>news-5.jpg</strong> o <strong>news (5).png</strong>, o listalas en <code>NEWS_STATIC_FILES</code>.</p>`;
-        return;
-      }
-      items.forEach(({n, src})=>{
-        const col = document.createElement('div');
-        col.className = 'col-12 col-md-6 col-lg-4';
-        col.innerHTML = `
-          <article class="news-card h-100 d-flex flex-column position-relative">
-            <img src="${src}" alt="Noticia ${n} de @e.spaciales" class="news-media" loading="lazy" decoding="async">
-            <div class="p-3 d-flex flex-column gap-2">
-              <div class="d-flex justify-content-between align-items-center">
-                <span class="badge ig-badge">Instagram</span>
-                <span class="news-meta">#${n}</span>
-              </div>
-              <h3 class="news-title h5 m-0">Publicación</h3>
-              <small class="text-secondary">Galería de noticias</small>
-            </div>
-          </article>`;
-        grid.appendChild(col);
-      });
-    }
-
-    // ==========================================================
     //                  GALERÍA (mismo folder soportado)
     // ==========================================================
     const GAL_DIRS  = ['', 'galeria/','Galeria/','GALERIA/']; // '' = misma carpeta
@@ -641,11 +561,7 @@
       updateProducts(discovered);
       updateCartCount();
 
-      // Noticias: mostrar todas
-      const items = await discoverNews();
-      buildNewsCards(items);
-
-      // Galería: mostrar TODO al inicio
+      // Galería
       GALLERY_SRCS = await prepareGallerySources();
       buildGallery(galleryVisible);
     })();
