@@ -41,7 +41,6 @@
         <ul class="navbar-nav me-3">
           <li class="nav-item"><a class="nav-link active" href="#inicio" onclick="setActive(this)">INICIO</a></li>
           <li class="nav-item"><a class="nav-link" href="#tienda" onclick="setActive(this)">TIENDA</a></li>
-          <li class="nav-item"><a class="nav-link" href="#galeria" onclick="setActive(this)">GALERÍA</a></li>
           <li class="nav-item"><a class="nav-link" href="#sobre-mi" onclick="setActive(this)">SOBRE MÍ</a></li>
         </ul>
         <a class="btn btn-sm btn-outline-light position-relative" href="carrito.html" aria-label="Ir al carrito">
@@ -60,7 +59,6 @@
           <ul class="navbar-nav text-end">
             <li class="nav-item"><a class="nav-link active" href="#inicio" onclick="collapseNav();setActive(this)">INICIO</a></li>
             <li class="nav-item"><a class="nav-link" href="#tienda" onclick="collapseNav();setActive(this)">TIENDA</a></li>
-            <li class="nav-item"><a class="nav-link" href="#galeria" onclick="collapseNav();setActive(this)">GALERÍA</a></li>
             <li class="nav-item"><a class="nav-link" href="#sobre-mi" onclick="collapseNav();setActive(this)">SOBRE MÍ</a></li>
           </ul>
         </div>
@@ -118,21 +116,6 @@
       </div>
     </div>
   </main>
-
-  <hr class="about-hr">
-
-  <!-- ===== Galería ===== -->
-  <section id="galeria" class="container pb-5">
-    <h2 class="h3 mb-3">Galería</h2>
-    <p class="text-secondary mb-4">Algunas tomas de nuestras ilustraciones y proceso.</p>
-    <div id="galeriaGrid" class="row g-3"></div>
-    <div id="galeriaMoreWrap" class="more-wrap text-center my-4">
-      <div class="more-actions">
-        <button id="galeriaMoreBtnMore" class="more-btn" type="button" aria-expanded="false">Ver más</button>
-        <button id="galeriaMoreBtnLess" class="more-btn" type="button" aria-expanded="true">Ver menos</button>
-      </div>
-    </div>
-  </section>
 
   <hr class="about-hr">
 
@@ -246,30 +229,30 @@
     // ==========================================================
     //                  CONFIG / PRODUCTOS
     // ==========================================================
-    const BASE_PRICE = 43000; // La mayoría a $43.000
-    // Solo ALGUNOS modelos serán "Nuevo" (editá este set a gusto)
-    const NEW_MODELS = new Set([57,58,60,61,68,72,90,104]);
+    // Precio por defecto para "la mayoría"
+    const STANDARD_PRICE = 43000;
 
-    // Si querés forzar precios distintos puntuales:
-    const PRICE_OVERRIDES = new Map([
-      // [n_modelo, precio],
-      // ej.: [60, 45000],
-    ]);
+    // "Solo algunos" modelos marcados como NUEVOS (ajustá a gusto)
+    const NEW_MODELS = new Set([57,58,59,60,61]);
+
+    // Prioridad de carga: se muestran apenas están listos (arranque instantáneo)
+    // Mezclo algunos nuevos y varios populares para variedad inmediata.
+    const PREFERRED_FIRST = [57,58,59,60,20,21,36,37];
+
+    // Rango total a descubrir en segundo plano
+    const PROD_MAX_INDEX = 120;
 
     // Directorios y patrones (incluye misma carpeta '')
     const PROD_DIRS     = ['', 'tienda/'];
     const PROD_PREFIXES = ['modelos ', 'modelos', 'modelo ', 'modelo', 'Remera ', 'remera ', 'Remeras ', 'remeras '];
     const PROD_SEPS     = ['(', '-', '_', ' '];
-    const PROD_MAX_INDEX= 120;
     const PROD_EXTS     = ['webp','jpg','jpeg','png','WEBP','JPG','JPEG','PNG'];
 
     const money = n => new Intl.NumberFormat('es-AR',{ style:'currency',currency:'ARS',maximumFractionDigits:0 }).format(n);
+    const getPrice = p => Number(p.price) || 0;
 
-    // === Etiqueta/Precio según reglas pedidas ===
     function computeTag(n){ return NEW_MODELS.has(n) ? 'Nuevo' : 'Popular'; }
-    function computePrice(n){ return PRICE_OVERRIDES.get(n) ?? BASE_PRICE; }
 
-    // === Carga robusta (verifica si existe) ===
     function tryLoad(src){
       return new Promise(resolve=>{
         const img = new Image();
@@ -311,10 +294,9 @@
       return null;
     }
 
-    // ==========================================================
-    //           RENDER: tarjetas + fallback de imágenes
-    // ==========================================================
-    let PRODUCTS = []; // {id, n, name, price, tag, src, srcGuesses[]}
+    // ---------------- Estado / render ----------------
+    let PRODUCTS = [];                 // Array ordenado por número
+    const PRODUCT_MAP = new Map();     // n -> producto
     const grid = document.getElementById('grid');
     const gridMoreWrap = document.getElementById('gridMoreWrap');
     const gridMoreBtnMore = document.getElementById('gridMoreBtnMore');
@@ -324,32 +306,23 @@
     let currentFiltered = [];
     const selectedSizes = new Map();
 
+    function upsertProduct(n, src){
+      const tag = computeTag(n);
+      PRODUCT_MAP.set(n, {
+        id: 'r'+n,
+        name: 'Remera '+n,
+        price: STANDARD_PRICE,
+        tag,
+        src
+      });
+      PRODUCTS = Array.from(PRODUCT_MAP.entries())
+        .sort((a,b)=> a[0]-b[0])
+        .map(([,p])=>p);
+      applyFilters(); // refresca vista al instante
+    }
+
     function sizeChip(id, size){ return `<button type="button" class="size-chip" data-id="${id}" data-size="${size}" aria-pressed="false">${size}</button>`; }
     function markSelected(btn){ btn.classList.add('selected'); btn.setAttribute('aria-pressed','true'); }
-
-    function imgHTML(p){
-      // Guardamos posibles rutas en data-srcs para fallback inmediato sin esperar discovery
-      const chain = [p.src, ...(p.srcGuesses||[])].filter(Boolean);
-      const data = encodeURIComponent(JSON.stringify(chain));
-      return `<img class="card-img-top prod-img" data-srcs='${data}' alt="${p.name} con ilustración original" loading="lazy" decoding="async">`;
-    }
-
-    function hydrateImages(){
-      document.querySelectorAll('.prod-img').forEach(img=>{
-        if (img.dataset.hydrated) return;
-        img.dataset.hydrated = '1';
-        const srcs = JSON.parse(decodeURIComponent(img.getAttribute('data-srcs')||'[]'));
-        if (!srcs.length) return;
-        let idx = 0;
-        const tryNext = ()=>{
-          if (idx >= srcs.length) return; // se queda roto si ninguna existe
-          img.onerror = ()=>{ idx++; tryNext(); };
-          img.src = srcs[idx];
-        };
-        tryNext();
-      });
-    }
-
     function bindSizeSelectors(){
       grid.querySelectorAll('.size-chip').forEach(btn=>{
         btn.addEventListener('click', () => {
@@ -362,17 +335,17 @@
 
     function render(list){
       grid.innerHTML = '';
-      if(!list.length){ grid.innerHTML = '<p class="text-center text-secondary">No se encontraron productos con esos filtros.</p>'; return; }
+      if(!list.length){ grid.innerHTML = '<p class="text-center text-secondary">Cargando diseños…</p>'; return; }
       for(const p of list){
         const col = document.createElement('div');
         col.className = 'col-6 col-lg-3';
         col.innerHTML = `
           <article class="card h-100" data-pid="${p.id}">
             <div class="position-absolute m-2"><span class="badge ${p.tag==='Nuevo'?'badge-new':'badge-pop'}">${p.tag}</span></div>
-            ${imgHTML(p)}
+            <img class="card-img-top" src="${p.src}" alt="${p.name} con ilustración original" loading="eager" decoding="async">
             <div class="card-body d-flex flex-column">
               <h3 class="product-title mb-1">${p.name}</h3>
-              <div class="price mb-2">${money(p.price)}</div>
+              <div class="price mb-2">${money(getPrice(p))}</div>
               <div class="sizes mb-3" role="group" aria-label="Talles disponibles">
                 ${sizeChip(p.id,'S')}${sizeChip(p.id,'M')}${sizeChip(p.id,'L')}${sizeChip(p.id,'XL')}${sizeChip(p.id,'XXL')}
               </div>
@@ -382,7 +355,6 @@
         grid.appendChild(col);
       }
       bindSizeSelectors();
-      hydrateImages(); // engancha el fallback de imágenes
       for(const [id, size] of selectedSizes){
         const btn = grid.querySelector(`.size-chip[data-id="${id}"][data-size="${size}"]`);
         if(btn) markSelected(btn);
@@ -398,10 +370,12 @@
       gridMoreBtnLess.setAttribute('aria-expanded', String(visible > PRODUCTS_VISIBLE_INIT));
     }
 
-    // === Filtros ===
+    // ---------------- Filtros ----------------
     const searchInput = document.getElementById('searchInput');
     const tagSelect   = document.getElementById('tagSelect');
     const sortSelect  = document.getElementById('sortSelect');
+
+    function getPriceSafe(p){ return Number(p.price)||0; }
 
     function applyFilters(){
       const q = (searchInput.value || '').toLowerCase().trim();
@@ -415,8 +389,8 @@
 
       const byId = (a,b) => (a.id||'').localeCompare(b.id||'', undefined, {numeric:true, sensitivity:'base'});
 
-      if (ord==='priceAsc')  list.sort((a,b)=> (a.price - b.price) || byId(a,b));
-      if (ord==='priceDesc') list.sort((a,b)=> (b.price - a.price) || byId(a,b));
+      if (ord==='priceAsc')  list.sort((a,b)=> (getPriceSafe(a) - getPriceSafe(b)) || byId(a,b));
+      if (ord==='priceDesc') list.sort((a,b)=> (getPriceSafe(b) - getPriceSafe(a)) || byId(a,b));
 
       currentFiltered = list;
       productsVisible = Math.min(PRODUCTS_VISIBLE_INIT, list.length);
@@ -424,7 +398,7 @@
       updateMoreProductsVisibility(list.length, productsVisible);
     }
 
-    const debounce = (fn, ms=120) => { let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); }; };
+    const debounce = (fn, ms=150) => { let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); }; };
     searchInput.addEventListener('input', debounce(applyFilters, 120));
     tagSelect.addEventListener('change', applyFilters);
     sortSelect.addEventListener('change', applyFilters);
@@ -447,7 +421,7 @@
       applyFilters();
     }
 
-    // === Carrito simple ===
+    // ---------------- Carrito simple ----------------
     const CART_KEY = 'espaciales_cart';
     const cartCountEl           = document.getElementById('cartCount');
     const cartCountElMobileNav  = document.getElementById('cartCountMobileNav');
@@ -468,183 +442,42 @@
       const cart = getCart();
       const idx = cart.findIndex(it=> (it.key===key));
       if(idx>-1) cart[idx].qty += 1;
-      else cart.push({ key, id, name: product.name, price: product.price, size, qty: 1, img: product.src || (product.srcGuesses?.[0]||''), imgFull: product.src || (product.srcGuesses?.[0]||'') });
+      else cart.push({ key, id, name: product.name, price: getPrice(product), size, qty: 1, img: product.src, imgFull: product.src });
       setCart(cart); toastAdd.show();
     }
 
-    // ==========================================================
-    //        CARGA INSTANTÁNEA: "ola 1" optimista (sin esperar)
-    // ==========================================================
-    function initialWaveNumbers(){
-      // Priorizamos 57+ (por tu flujo) y agregamos algunos bajos por si existen.
-      const hi = Array.from({length: 20}, (_,i)=> 57+i); // 57..76
-      const lo = Array.from({length: 12}, (_,i)=> i+1);  // 1..12
-      return [...hi, ...lo];
+    // ---------------- Descubrimiento de productos ----------------
+    async function discoverPreferredFirst(){
+      // Lanza búsquedas SIN esperar al resto: aparecen apenas resuelven.
+      for (const n of PREFERRED_FIRST){
+        checkFirstExistingForNumber(n).then(src=>{
+          if (src) upsertProduct(n, src);
+        });
+      }
     }
 
-    function guessesFor(n){
-      // Intentos directos comunes (sin verificación) — aparecen INSTANTÁNEO y 
-      // el fallback de <img> irá probando cadenas si alguna falta
-      return [
-        `modelos (${n}).webp`,
-        `modelos (${n}).jpg`,
-        `modelos (${n}).png`,
-        `modelo (${n}).jpg`,
-        `Remera ${n}.jpg`,
-        `remera ${n}.jpg`
-      ];
-    }
-
-    function seedInitialWave(){
-      const nums = initialWaveNumbers();
-      const now = Date.now();
-      const seeded = nums.map(n=>({
-        id: 'r'+n,
-        n,
-        name: 'Remera '+n,
-        price: computePrice(n),
-        tag: computeTag(n),
-        src: null,                 // aún no verificado
-        srcGuesses: guessesFor(n).map(s=> encodeURI(s + `?v=${now}`))
-      }));
-      // Merge sin duplicar si luego llega discovery
-      const byId = new Map(PRODUCTS.map(p=>[p.id,p]));
-      for (const p of seeded){ if (!byId.has(p.id)) byId.set(p.id, p); }
-      PRODUCTS = Array.from(byId.values()).sort((a,b)=> a.n - b.n);
-      applyFilters(); // ¡instantáneo!
-    }
-
-    // ==========================================================
-    //         DESCUBRIMIENTO COMPLETO (verifica y corrige src)
-    // ==========================================================
-    async function discoverProductsParallel(){
-      const tasks = Array.from({length: PROD_MAX_INDEX}, (_,i)=> i+1);
-      let idx = 0; const foundMap = new Map();
+    async function discoverRestInBackground(){
+      const preferredSet = new Set(PREFERRED_FIRST);
+      const tasks = Array.from({length: PROD_MAX_INDEX}, (_,i)=> i+1).filter(n=> !preferredSet.has(n));
+      let idx = 0;
       function next(){ const n = tasks[idx++]; return n===undefined ? null : n; }
       async function worker(){
         for(;;){
           const n = next(); if (n===null) break;
           const src = await checkFirstExistingForNumber(n);
-          if (src){ foundMap.set(n, src); updateProductsFromFound(n, src); }
+          if (src) upsertProduct(n, src);
         }
       }
-      const workers = Array.from({length: 8}, ()=>worker());
+      const workers = Array.from({length: 6}, ()=>worker());
       await Promise.all(workers);
-    }
-
-    function updateProductsFromFound(n, src){
-      // Si ya estaba sembrado, reemplazamos src y limpiamos guesses
-      const id = 'r'+n;
-      const i = PRODUCTS.findIndex(p=>p.id===id);
-      if (i>-1){
-        PRODUCTS[i].src = src;
-        PRODUCTS[i].srcGuesses = [];
-      } else {
-        PRODUCTS.push({ id, n, name:'Remera '+n, price: computePrice(n), tag: computeTag(n), src, srcGuesses: [] });
-        PRODUCTS.sort((a,b)=> a.n - b.n);
-      }
-      // Re-render suave manteniendo filtros y selección
-      const q = (searchInput.value || '').toLowerCase().trim();
-      const tag = (tagSelect.value || 'all').trim();
-      const ord = (sortSelect.value || 'default').trim();
-      let list = PRODUCTS.filter(p => (tag==='all' || p.tag===tag) && (q==='' || p.name.toLowerCase().includes(q)) );
-      const byId = (a,b) => (a.id||'').localeCompare(b.id||'', undefined, {numeric:true, sensitivity:'base'});
-      if (ord==='priceAsc')  list.sort((a,b)=> (a.price - b.price) || byId(a,b));
-      if (ord==='priceDesc') list.sort((a,b)=> (b.price - a.price) || byId(a,b));
-      currentFiltered = list;
-      render(list.slice(0, productsVisible));
-      updateMoreProductsVisibility(list.length, productsVisible);
     }
 
     // ---------- Init ----------
     (async () => {
-      // 1) Ola inicial instantánea (sin esperar red):
-      seedInitialWave();
+      // Mostrar productos lo antes posible:
+      discoverPreferredFirst();     // arranca inmediato, va mostrando
+      discoverRestInBackground();   // el resto carga en segundo plano
       updateCartCount();
-
-      // 2) Descubrimiento completo en segundo plano (corrige rutas reales):
-      discoverProductsParallel();
-
-      // 3) Galería (opcionalmente puede tardar)
-      try {
-        const { srclist, builder } = await (async function(){
-          const GAL_DIRS  = ['', 'galeria/','Galeria/','GALERIA/'];
-          const GAL_EXTS  = ['webp','jpg','jpeg','png','JPG','PNG','WEBP','JPEG'];
-          const GAL_COUNT = 60;
-          async function prepareGallerySources(){
-            const out = [];
-            for (let i = 1; i <= GAL_COUNT; i++){
-              let src = null;
-              outer:
-              for (const dir of GAL_DIRS){
-                for (const base of [
-                  // NUEVO patrón según tus archivos: "nuevo (1).jpg"
-                  `nuevo (${i})`, `nuevo (${String(i).padStart(2,'0')})`,
-                  `nuevos (${i})`, `nuevos (${String(i).padStart(2,'0')})`,
-                  // Variantes por si cambiaste mayúsculas
-                  `Nuevo (${i})`, `Nuevo (${String(i).padStart(2,'0')})`,
-                  `NUEVO (${i})`, `NUEVO (${String(i).padStart(2,'0')})`,
-                  // Ya soportadas antes
-                  `nuevas (${i})`, `nuevas (${String(i).padStart(2,'0')})`,
-                  `nueva (${i})`,  `nueva (${String(i).padStart(2,'0')})`,
-                  `galeria (${i})`, `galeria-${i}`, `galeria-${String(i).padStart(2,'0')}`,
-                  `Galeria (${i})`, `Galeria-${i}`, `Galeria-${String(i).padStart(2,'0')}`,
-                  `GALERIA (${i})`, `GALERIA-${i}`, `GALERIA-${String(i).padStart(2,'0')}`,
-                  `gallery (${i})`, `gallery (${String(i).padStart(2,'0')})`, `gallery-${i}`, `gallery-${String(i).padStart(2,'0')}`,
-                  `gal (${i})`, `gal-${i}`, `img-galeria-${i}`
-                ]){
-                  for (const ext of GAL_EXTS){
-                    const cand = `${dir}${base}.${ext}`;
-                    const ok = await tryLoad(cand);
-                    if (ok){ src = ok; break outer; }
-                  }
-                }
-              }
-              if (src) out.push(src);
-            }
-            return out;
-          }
-          function buildGallery(srclist, showAll=false){
-            const galeriaGrid = document.getElementById('galeriaGrid');
-            const galeriaMoreWrap = document.getElementById('galeriaMoreWrap');
-            const galeriaMoreBtnMore = document.getElementById('galeriaMoreBtnMore');
-            const galeriaMoreBtnLess = document.getElementById('galeriaMoreBtnLess');
-            galeriaGrid.innerHTML = '';
-            const total = srclist.length;
-            if (!total){
-              galeriaGrid.innerHTML = '<p class="text-secondary">Agregá imágenes en el mismo folder (o /galeria) con nombres tipo <code>nuevas (1).jpg</code> o <code>galeria-1.png</code>.</p>';
-              galeriaMoreWrap.style.display = 'none';
-              return;
-            }
-            const max = showAll ? total : Math.min(4, total); // 4 al inicio para carga rápida
-            for (let i = 0; i < max; i++) {
-              const src = srclist[i];
-              const col = document.createElement('div');
-              col.className = 'col-6 col-md-3';
-              // Primeras 4 con prioridad alta para que carguen rápido
-              const eager = i < 4 ? ' fetchpriority="high" loading="eager"' : ' loading="lazy"';
-              col.innerHTML = `
-                <div class="gallery-frame">
-                  <img class="gallery-img" src="${src}" alt="Galería Espaciales ${i+1}" decoding="async"${eager}>
-                </div>`;
-              galeriaGrid.appendChild(col);
-            }
-            const showControls = total > 4;
-            galeriaMoreWrap.style.display = showControls ? 'block' : 'none';
-            galeriaMoreBtnMore.style.display = (!showAll && showControls) ? 'inline-block' : 'none';
-            galeriaMoreBtnLess.style.display = (showAll && showControls) ? 'inline-block' : 'none';
-
-            galeriaMoreBtnMore.onclick = () => buildGallery(srclist, true);
-            galeriaMoreBtnLess.onclick = () => {
-              buildGallery(srclist, false);
-              document.getElementById('galeria').scrollIntoView({ behavior:'smooth', block:'start' });
-            };
-          }
-          const srclist = await prepareGallerySources();
-          return { srclist, builder: buildGallery };
-        })();
-        builder(srclist);
-      } catch {}
     })();
 
     // Exponer helpers
