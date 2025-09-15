@@ -578,9 +578,18 @@
               outer:
               for (const dir of GAL_DIRS){
                 for (const base of [
+                  // NUEVO patrón según tus archivos: "nuevo (1).jpg"
+                  `nuevo (${i})`, `nuevo (${String(i).padStart(2,'0')})`,
+                  `nuevos (${i})`, `nuevos (${String(i).padStart(2,'0')})`,
+                  // Variantes por si cambiaste mayúsculas
+                  `Nuevo (${i})`, `Nuevo (${String(i).padStart(2,'0')})`,
+                  `NUEVO (${i})`, `NUEVO (${String(i).padStart(2,'0')})`,
+                  // Ya soportadas antes
                   `nuevas (${i})`, `nuevas (${String(i).padStart(2,'0')})`,
                   `nueva (${i})`,  `nueva (${String(i).padStart(2,'0')})`,
                   `galeria (${i})`, `galeria-${i}`, `galeria-${String(i).padStart(2,'0')}`,
+                  `Galeria (${i})`, `Galeria-${i}`, `Galeria-${String(i).padStart(2,'0')}`,
+                  `GALERIA (${i})`, `GALERIA-${i}`, `GALERIA-${String(i).padStart(2,'0')}`,
                   `gallery (${i})`, `gallery (${String(i).padStart(2,'0')})`, `gallery-${i}`, `gallery-${String(i).padStart(2,'0')}`,
                   `gal (${i})`, `gal-${i}`, `img-galeria-${i}`
                 ]){
