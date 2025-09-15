@@ -117,10 +117,10 @@
     </div>
   </main>
 
-  <!-- ===== Galería (nuevo) ===== -->
+  <!-- ===== Galería ===== -->
   <section id="galeria" class="container pb-5">
     <h2 class="h3 mb-3">Galería</h2>
-    <p class="text-secondary mb-4">Nuevas tomas (1–8). Se muestran 4 y podés ver más.</p>
+
     <div id="galeriaGrid" class="row g-3"></div>
     <div id="galeriaMoreWrap" class="more-wrap text-center my-4" style="display:none">
       <div class="more-actions">
@@ -459,22 +459,26 @@
       setCart(cart); toastAdd.show();
     }
 
-    // ---------------- Galería simple (nuevas (1..8).jpg/.PNG) ----------------
+    // ---------------- Galería simple (nuevas/nuevo (1..8).jpg/.png/.jpeg) ----------------
     const GAL_COUNT = 8;
-    const GAL_EXTS  = ['jpg','PNG','JPG','png','jpeg','JPEG'];
+    const GAL_EXTS  = ['jpg','png','jpeg','JPG','PNG','JPEG'];
+    const GAL_NAME_BASES = ['nuevas', 'nuevo']; // prefijos aceptados
     let GALLERY_SRCS = [];
     let galleryVisible = 4;
 
     async function prepareGallerySources(){
       const out = [];
-      for(let i=1;i<=GAL_COUNT;i++){
+      for (let i = 1; i <= GAL_COUNT; i++){
         let src = null;
-        for(const ext of GAL_EXTS){
-          const cand = `nuevas (${i}).${ext}`;
-          const ok = await tryLoad(cand);
-          if(ok){ src = ok; break; }
+        outer:
+        for (const base of GAL_NAME_BASES){
+          for (const ext of GAL_EXTS){
+            const cand = `${base} (${i}).${ext}`;
+            const ok = await tryLoad(cand);
+            if (ok){ src = ok; break outer; }
+          }
         }
-        if(src) out.push(src);
+        if (src) out.push(src);
       }
       return out;
     }
@@ -489,7 +493,7 @@
       const total = GALLERY_SRCS.length;
 
       if(!total){
-        galeriaGrid.innerHTML = '<p class="text-secondary">No se encontraron imágenes (usa nombres como <code>nuevas (1).jpg</code> … <code>nuevas (8).PNG</code>).</p>';
+        galeriaGrid.innerHTML = '<p class="text-secondary">No se encontraron imágenes. Usá nombres como <code>nuevas (1).jpg</code> o <code>nuevo (1).jpg</code> hasta (8).</p>';
         galeriaMoreWrap.style.display = 'none';
         return;
       }
@@ -520,7 +524,7 @@
 
     // ---------------- Descubrimiento de productos ----------------
     async function discoverPreferredFirst(){
-      const PREFERRED_FIRST = [57,58,59,60,20,21,36,37];
+      // Lanza búsquedas SIN esperar al resto: aparecen apenas resuelven.
       for (const n of PREFERRED_FIRST){
         checkFirstExistingForNumber(n).then(src=>{
           if (src) upsertProduct(n, src);
@@ -529,7 +533,7 @@
     }
 
     async function discoverRestInBackground(){
-      const preferredSet = new Set([57,58,59,60,20,21,36,37]);
+      const preferredSet = new Set(PREFERRED_FIRST);
       const tasks = Array.from({length: PROD_MAX_INDEX}, (_,i)=> i+1).filter(n=> !preferredSet.has(n));
       let idx = 0;
       function next(){ const n = tasks[idx++]; return n===undefined ? null : n; }
