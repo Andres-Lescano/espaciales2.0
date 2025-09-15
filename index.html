@@ -242,20 +242,19 @@
     // ==========================================================
     //                  CONFIG / PRODUCTOS
     // ==========================================================
-    // Precio por defecto para "la mayoría"
     const STANDARD_PRICE = 43000;
 
-    // "Solo algunos" modelos marcados como NUEVOS (ajustá a gusto)
+    // ➜ Overrides solicitados: 6, 7 y 40..45 a $41.000
+    const PRICE_OVERRIDES = new Map([
+      [6, 41000],[7, 41000],
+      [40, 41000],[41, 41000],[42, 41000],[43, 41000],[44, 41000],[45, 41000],
+    ]);
+    const priceFor = (n) => PRICE_OVERRIDES.get(n) ?? STANDARD_PRICE;
+
     const NEW_MODELS = new Set([57,58,59,60,61]);
-
-    // Prioridad de carga: se muestran apenas están listos (arranque instantáneo)
-    // Mezclo algunos nuevos y varios populares para variedad inmediata.
     const PREFERRED_FIRST = [57,58,59,60,20,21,36,37];
-
-    // Rango total a descubrir en segundo plano
     const PROD_MAX_INDEX = 120;
 
-    // Directorios y patrones (incluye misma carpeta '')
     const PROD_DIRS     = ['', 'tienda/'];
     const PROD_PREFIXES = ['modelos ', 'modelos', 'modelo ', 'modelo', 'Remera ', 'remera ', 'Remeras ', 'remeras '];
     const PROD_SEPS     = ['(', '-', '_', ' '];
@@ -263,7 +262,6 @@
 
     const money = n => new Intl.NumberFormat('es-AR',{ style:'currency',currency:'ARS',maximumFractionDigits:0 }).format(n);
     const getPrice = p => Number(p.price) || 0;
-
     function computeTag(n){ return NEW_MODELS.has(n) ? 'Nuevo' : 'Popular'; }
 
     function tryLoad(src){
@@ -308,8 +306,8 @@
     }
 
     // ---------------- Estado / render ----------------
-    let PRODUCTS = [];                 // Array ordenado por número
-    const PRODUCT_MAP = new Map();     // n -> producto
+    let PRODUCTS = [];
+    const PRODUCT_MAP = new Map();
     const grid = document.getElementById('grid');
     const gridMoreWrap = document.getElementById('gridMoreWrap');
     const gridMoreBtnMore = document.getElementById('gridMoreBtnMore');
@@ -324,21 +322,22 @@
       PRODUCT_MAP.set(n, {
         id: 'r'+n,
         name: 'Remera '+n,
-        price: STANDARD_PRICE,
+        price: priceFor(n), // <<<<<<<<<<<<<< precio según overrides
         tag,
         src
       });
       PRODUCTS = Array.from(PRODUCT_MAP.entries())
         .sort((a,b)=> a[0]-b[0])
         .map(([,p])=>p);
-      applyFilters(); // refresca vista al instante
+      applyFilters();
     }
 
     function sizeChip(id, size){ return `<button type="button" class="size-chip" data-id="${id}" data-size="${size}" aria-pressed="false">${size}</button>`; }
     function markSelected(btn){ btn.classList.add('selected'); btn.setAttribute('aria-pressed','true'); }
     function bindSizeSelectors(){
       grid.querySelectorAll('.size-chip').forEach(btn=>{
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (ev) => {
+          ev.preventDefault(); ev.stopPropagation();
           const id = btn.dataset.id, size = btn.dataset.size;
           btn.closest('.sizes').querySelectorAll('.size-chip').forEach(b=>{ b.classList.remove('selected'); b.setAttribute('aria-pressed','false'); });
           markSelected(btn); selectedSizes.set(id, size);
@@ -362,7 +361,7 @@
               <div class="sizes mb-3" role="group" aria-label="Talles disponibles">
                 ${sizeChip(p.id,'S')}${sizeChip(p.id,'M')}${sizeChip(p.id,'L')}${sizeChip(p.id,'XL')}${sizeChip(p.id,'XXL')}
               </div>
-              <button class="btn btn-accent mt-auto" onclick="addToCart('${p.id}')" aria-label="Agregar ${p.name} al carrito">Agregar al carrito</button>
+              <button class="btn btn-accent mt-auto" type="button" onclick="addToCart('${p.id}')" aria-label="Agregar ${p.name} al carrito">Agregar al carrito</button>
             </div>
           </article>`;
         grid.appendChild(col);
@@ -416,16 +415,31 @@
     tagSelect.addEventListener('change', applyFilters);
     sortSelect.addEventListener('change', applyFilters);
 
-    document.getElementById('gridMoreBtnMore')?.addEventListener('click', () => {
+    // ====== FIX "Ver más" sin reinicio ======
+    const stopAndNoNav = (ev) => { if(!ev) return; ev.preventDefault(); ev.stopPropagation(); ev.stopImmediatePropagation?.(); };
+
+    gridMoreBtnMore?.addEventListener('click', (ev) => {
+      stopAndNoNav(ev);
+      const y = window.scrollY;
       productsVisible = Math.min(productsVisible + 4, currentFiltered.length);
       render(currentFiltered.slice(0, productsVisible));
       updateMoreProductsVisibility(currentFiltered.length, productsVisible);
+      window.scrollTo(0, y);
     });
-    document.getElementById('gridMoreBtnLess')?.addEventListener('click', () => {
+
+    gridMoreBtnLess?.addEventListener('click', (ev) => {
+      stopAndNoNav(ev);
+      const y = window.scrollY;
       productsVisible = Math.min(PRODUCTS_VISIBLE_INIT, currentFiltered.length);
       render(currentFiltered.slice(0, productsVisible));
       updateMoreProductsVisibility(currentFiltered.length, productsVisible);
+      window.scrollTo(0, y);
       document.getElementById('tienda').scrollIntoView({ behavior:'smooth', block:'start' });
+    });
+
+    // Blindaje si hubiera un <form>
+    document.addEventListener('submit', (ev) => {
+      if (ev.target && ev.target.contains(gridMoreWrap)) { ev.preventDefault(); ev.stopPropagation(); }
     });
 
     function applyMobileFilters(){
@@ -459,10 +473,10 @@
       setCart(cart); toastAdd.show();
     }
 
-    // ---------------- Galería simple (nuevas/nueva/nuevo (1..8).jpg/.png/.jpeg) ----------------
+    // ---------------- Galería ----------------
     const GAL_COUNT = 8;
     const GAL_EXTS  = ['jpg','png','jpeg','JPG','PNG','JPEG'];
-    const GAL_NAME_BASES = ['nuevas', 'nuevo', 'nueva']; // <<< agregado 'nueva'
+    const GAL_NAME_BASES = ['nuevas', 'nuevo', 'nueva'];
     let GALLERY_SRCS = [];
     let galleryVisible = 4;
 
@@ -515,8 +529,9 @@
       btnMore.style.display = (max < total) ? 'inline-block' : 'none';
       btnLess.style.display = (max > 4) ? 'inline-block' : 'none';
 
-      btnMore.onclick = () => { galleryVisible = total; buildGallery(galleryVisible); };
-      btnLess.onclick = () => {
+      btnMore.onclick = (ev) => { stopAndNoNav(ev); galleryVisible = total; buildGallery(galleryVisible); };
+      btnLess.onclick = (ev) => {
+        stopAndNoNav(ev);
         galleryVisible = 4; buildGallery(galleryVisible);
         document.getElementById('galeria').scrollIntoView({ behavior:'smooth', block:'start' });
       };
@@ -524,7 +539,6 @@
 
     // ---------------- Descubrimiento de productos ----------------
     async function discoverPreferredFirst(){
-      // Lanza búsquedas SIN esperar al resto: aparecen apenas resuelven.
       for (const n of PREFERRED_FIRST){
         checkFirstExistingForNumber(n).then(src=>{
           if (src) upsertProduct(n, src);
@@ -550,12 +564,10 @@
 
     // ---------- Init ----------
     (async () => {
-      // Productos: aparición lo antes posible
       discoverPreferredFirst();
       discoverRestInBackground();
       updateCartCount();
 
-      // Galería
       GALLERY_SRCS = await prepareGallerySources();
       buildGallery(galleryVisible);
     })();
