@@ -247,8 +247,12 @@
     //                  CONFIG / PRODUCTOS
     // ==========================================================
     const STANDARD_PRICE = 43000;
-    const OVERRIDE_PRICE = 41000;
-    const POPULAR_MODELS = new Set([20,21,36,37,38,39,40,41]);
+    const POPULAR_PRICE  = 41000; // Popular un poco más barato
+    // A pedido: MUCHAS más "Populares". Regla: desde el 57 en adelante = "Nuevo", el resto = "Popular".
+    const NEW_FROM = 57;
+
+    // Si querés forzar populares puntuales además de la regla:
+    const POPULAR_EXTRAS = new Set([20,21,36,37,38,39,40,41]); // podés sumar más
 
     // Directorios y patrones (incluye misma carpeta '')
     const PROD_DIRS     = ['', 'tienda/'];
@@ -259,6 +263,14 @@
 
     const money = n => new Intl.NumberFormat('es-AR',{ style:'currency',currency:'ARS',maximumFractionDigits:0 }).format(n);
     const getPrice = p => Number(p.price) || 0;
+
+    function computeTag(n){
+      if (POPULAR_EXTRAS.has(n)) return 'Popular';
+      return (n >= NEW_FROM) ? 'Nuevo' : 'Popular';
+    }
+    function computePriceByTag(tag){
+      return tag === 'Popular' ? POPULAR_PRICE : STANDARD_PRICE;
+    }
 
     function tryLoad(src){
       return new Promise(resolve=>{
@@ -385,7 +397,10 @@
       const tag = (tagSelect.value || 'all').trim();
       const ord = (sortSelect.value || 'default').trim();
 
-      let list = PRODUCTS.filter(p => (tag==='all' || p.tag===tag) && (q==='' || p.name.toLowerCase().includes(q)));
+      let list = PRODUCTS.filter(p =>
+        (tag==='all' || p.tag===tag) &&
+        (q==='' || p.name.toLowerCase().includes(q))
+      );
 
       const byId = (a,b) => (a.id||'').localeCompare(b.id||'', undefined, {numeric:true, sensitivity:'base'});
 
@@ -397,6 +412,12 @@
       render(list.slice(0, productsVisible));
       updateMoreProductsVisibility(list.length, productsVisible);
     }
+
+    // Listeners que faltaban para que el filtrado funcione inmediatamente
+    const debounce = (fn, ms=150) => { let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); }; };
+    searchInput.addEventListener('input', debounce(applyFilters, 120));
+    tagSelect.addEventListener('change', applyFilters);
+    sortSelect.addEventListener('change', applyFilters);
 
     document.getElementById('gridMoreBtnMore')?.addEventListener('click', () => {
       productsVisible = Math.min(productsVisible + 4, currentFiltered.length);
@@ -542,13 +563,16 @@
     function updateProducts(discovered){
       PRODUCTS = discovered
         .sort((a,b)=> a.n - b.n)
-        .map(({n, src}) => ({
-          id: 'r' + n,
-          name: 'Remera ' + n,
-          price: POPULAR_MODELS.has(n) ? OVERRIDE_PRICE : STANDARD_PRICE,
-          tag: POPULAR_MODELS.has(n) ? 'Popular' : 'Nuevo',
-          src
-        }));
+        .map(({n, src}) => {
+          const tag = computeTag(n);
+          return {
+            id: 'r' + n,
+            name: 'Remera ' + n,
+            price: computePriceByTag(tag),
+            tag,
+            src
+          };
+        });
       applyFilters();
     }
 
