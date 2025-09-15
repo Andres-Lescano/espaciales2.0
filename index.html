@@ -7,49 +7,22 @@
   <meta name="description" content="Tienda Espaciales: remeras ilustradas con dibujos únicos. Envío gratis desde 3 remeras. Talles S, M, L, XL.">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- PRELOAD imágenes del hero (ligeras). Evitamos pre-cargar el video pesado -->
+  <!-- PRELOAD (mismo folder que este HTML) -->
   <link rel="preload" as="image" href="astronautasss (2).jpg">
   <link rel="preload" as="image" href="gato.jpg">
+  <link rel="preload" as="image" href="gato.PNG">
   <link rel="preload" as="image" href="alien.jpg">
   <link rel="preload" as="image" href="valen3.jpg">
+  <link rel="preload" as="video"  href="video.MOV" type="video/quicktime">
 
   <link rel="stylesheet" href="archivo.css">
-  <style>
-    /* Ajustes mínimos por si el CSS externo no carga */
-    :root{ --bg:#000; --fg:#fff; --accent:#C7F9CC; --muted:#9aa0a6; --radius:12px; }
-    body{ background:var(--bg); color:var(--fg); }
-    .navbar{ background:#000; }
-    .shipping-bar{ background:#0b0b0b; color:var(--accent); letter-spacing:.5px; }
-    .hero{ position:relative; }
-    .hero-bg img{ width:100%; height:60vh; object-fit:cover; filter:contrast(.95) }
-    .hero-inner{ position:absolute; inset:0; display:grid; place-content:center; text-align:center; background:linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.55)); }
-    .claim{ color:var(--accent); }
-    .btn-accent{ background:var(--accent); color:#000; border:0; }
-    .badge-new{ background:var(--accent); color:#000; }
-    .badge-pop{ background:#222; color:#fff; border:1px solid #333; }
-    .size-chip{ padding:.25rem .5rem; border:1px solid #333; background:#111; color:#fff; border-radius:999px; margin-right:.25rem; font-size:.85rem; }
-    .size-chip.selected{ background:var(--accent); color:#000; border-color:transparent; }
-    .gallery-frame{ border:1px solid #222; border-radius:var(--radius); overflow:hidden; }
-    .about-hr{ border-color:#333; margin:2rem 0; }
-    .media-box{ max-width:min(100%, 520px); border-radius:var(--radius); overflow:hidden; }
-    .card{ background:#0d0d0d; border:1px solid #222; border-radius:16px; overflow:hidden; }
-    .product-title{ font-size:1rem; }
-    .price{ color:var(--accent); font-weight:600; }
-    .more-wrap .more-btn{ background:#151515; color:#fff; border:1px solid #333; padding:.5rem 1rem; border-radius:999px; }
-    /* Móvil: botones y talles un poco más chicos */
-    @media (max-width: 576px){
-      .btn.btn-accent{ padding:.45rem .75rem; font-size:.9rem; }
-      .sizes .size-chip{ font-size:.75rem; padding:.2rem .45rem; }
-      .hero-bg img{ height:48vh; }
-    }
-  </style>
 </head>
 <body>
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
     <div class="container align-items-center">
       <a class="navbar-brand d-flex align-items-center" href="#" onclick="return reloadHome(event)" title="Recargar inicio">
-        <img src="logo.png" alt="Espaciales Logo" style="height: 40px; width:auto;">
+        <img src="logo.png" alt="Espaciales Logo" style="height: 40px; max-height: 40px; width: auto;">
       </a>
 
       <!-- Móvil: carrito + hamburguesa -->
@@ -108,14 +81,14 @@
     <div class="container hero-inner">
       <p class="claim mb-2">Ilustraciones únicas para elevar tu outfit</p>
       <h1 class="display-5">Tienda</h1>
-      <a class="btn btn-accent btn-sm mt-3" data-bs-toggle="offcanvas" data-bs-target="#filters">Filtrar</a>
+      <a class="btn filter-btn btn-sm mt-3" data-bs-toggle="offcanvas" data-bs-target="#filters">Filtrar</a>
     </div>
   </header>
 
   <!-- Buscador + filtros -->
   <section class="container my-4" id="tienda">
     <div class="row g-2 align-items-center">
-      <div class="col-12 col-md-6"><input id="searchInput" class="form-control form-control-lg" type="search" placeholder="Buscar diseño..." aria-label="Buscar diseño"></div>
+      <div class="col-12 col-md-6"><input id="searchInput" class="form-control form-control-lg search-input" type="search" placeholder="Buscar diseño..." aria-label="Buscar diseño"></div>
       <div class="col-6 col-md-3">
         <select id="tagSelect" class="form-select bg-black text-white border-secondary" aria-label="Filtrar por etiqueta">
           <option value="all">Todas las etiquetas</option>
@@ -136,10 +109,10 @@
   <!-- Productos -->
   <main class="container pb-3">
     <div id="grid" class="row g-4"></div>
-    <div id="gridMoreWrap" class="more-wrap text-center my-4" style="display:none">
+    <div id="gridMoreWrap" class="more-wrap text-center my-4">
       <div class="more-actions">
         <button id="gridMoreBtnMore" class="more-btn" type="button" aria-expanded="false">Ver más</button>
-        <button id="gridMoreBtnLess" class="more-btn" type="button" aria-expanded="true" style="display:none">Ver menos</button>
+        <button id="gridMoreBtnLess" class="more-btn" type="button" aria-expanded="true">Ver menos</button>
       </div>
     </div>
   </main>
@@ -147,6 +120,7 @@
   <!-- ===== Galería ===== -->
   <section id="galeria" class="container pb-5">
     <h2 class="h3 mb-3">Galería</h2>
+
     <div id="galeriaGrid" class="row g-3"></div>
     <div id="galeriaMoreWrap" class="more-wrap text-center my-4" style="display:none">
       <div class="more-actions">
@@ -159,11 +133,11 @@
   <hr class="about-hr">
 
   <!-- ===== Sobre mí + Contacto ===== -->
-  <section id="sobre-mi" class="container">
+  <section id="sobre-mi" class="container ">
     <div class="row align-items-center g-4">
-      <div class="col-12 col-md-5 text-center"><img src="valen3.jpg" alt="Valentín dibujando" class="img-fluid shadow" style="max-width:70%;max-height:400px;object-fit:cover;"></div>
+      <div class="col-12 col-md-5 text-center"><img src="valen3.jpg" alt="Valentín dibujando" class="img-fluid about-img shadow " style="max-width: 70%; height: auto; width: 70%; max-height: 400px; object-fit: cover;"></div>
       <div class="col-12 col-md-7 text-center text-md-start">
-        <h2 class="h2 mb-3">Sobre mí</h2>
+        <h2 class="h2 mb-3 ">Sobre mí</h2>
         <p class="text-secondary">Soy Valentin, artista e ilustrador independiente. Mi obra combina trazos simples y temáticas urbanas con ropa cómoda y expresiva...</p>
       </div>
     </div>
@@ -176,22 +150,20 @@
     <div class="row g-3 justify-content-center align-items-center text-center">
       <div class="col-12 col-md-auto d-flex justify-content-center justify-content-md-end">
         <figure class="m-0 media-box">
-          <img src="foto_contecto.jpg" alt="Foto de contacto" class="img-fluid shadow border border-secondary"
-               loading="lazy" decoding="async"
-               onerror="this.onerror=null;this.src='foto_contacto.jpg'">
+          <img src="foto_contecto.jpg" alt="Foto de contacto" class="img-fluid shadow border border-secondary" loading="lazy" decoding="async" style="max-width: 100%; height: auto; width: 100%; max-height: 550px; object-fit: cover;">
         </figure>
       </div>
       <div class="col-12 col-md-auto d-flex justify-content-center justify-content-md-start">
         <div class="media-box">
-          <video class="w-100 shadow border border-secondary" controls playsinline preload="metadata" style="max-height:550px;object-fit:cover;">
-            <source src="video.MOV" type="video/quicktime">
+          <video class="w-100 shadow border border-secondary" controls playsinline preload="metadata" style="max-width: 100%; height: auto; width: 100%; max-height: 550px; object-fit: cover;">
+            <source src="video.MOV">
             Tu navegador no soporta el video. Podés descargarlo desde <a href="video.MOV">acá</a>.
           </video>
         </div>
       </div>
       <div class="col-12 col-md-auto d-flex justify-content-center justify-content-md-end">
         <figure class="m-0 media-box">
-          <img src="valen1.jpg" alt="Retrato de Valentín" class="img-fluid">
+          <img src="valen1.jpg" alt="Retrato de Valentín" style="max-width: 100%; height: auto; width: 100%; max-height: 550px; object-fit: cover;">
         </figure>
       </div>
     </div>
@@ -216,7 +188,7 @@
         <option value="all">Todas</option><option value="Nuevo">Nuevo</option><option value="Popular">Popular</option>
       </select>
       <label class="form-label">Buscar</label>
-      <input id="searchInputMobile" class="form-control mb-3" type="search" placeholder="Buscar diseño...">
+      <input id="searchInputMobile" class="form-control search-input mb-3" type="search" placeholder="Buscar diseño...">
       <button class="btn btn-accent w-100" data-bs-dismiss="offcanvas" onclick="applyMobileFilters()">Aplicar filtros</button>
     </div>
   </div>
@@ -239,366 +211,360 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-  // =================== Bootstrap accesible ===================
-  document.addEventListener('DOMContentLoaded', () => {
-    try {
+    // Pausar carrusel si el usuario prefiere menos animación
+    document.addEventListener('DOMContentLoaded', () => {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         const el = document.getElementById('heroBg');
         if (el) bootstrap.Carousel.getOrCreateInstance(el).pause();
       }
-    } catch (e) { console.warn('Carousel init:', e); }
-  });
-
-  // ---------- Helpers navbar ----------
-  function collapseNav(){
-    const oc = document.getElementById('navMobile');
-    if(!oc) return;
-    const inst = bootstrap.Offcanvas.getInstance(oc) || new bootstrap.Offcanvas(oc);
-    inst.hide();
-  }
-  function setActive(link){
-    document.querySelectorAll('.navbar .nav-link').forEach(a=>a.classList.remove('active'));
-    link.classList.add('active');
-  }
-  function reloadHome(ev){
-    if (ev) ev.preventDefault();
-    try { collapseNav(); } catch {}
-    const url = window.location.href.split('#')[0];
-    window.history.replaceState(null, '', url);
-    window.location.reload();
-    return false;
-  }
-
-  // =================== Config básica ===================
-  const STANDARD_PRICE = 43000;
-  const NEW_MODELS = new Set([57,58,59,60,61]);
-  const PREFERRED_FIRST = [57,58,59,60,61,20,21,36,37];
-  const PROD_MAX_INDEX = 100;              // límite más razonable
-  const MAX_WORKERS = 2;                   // menos concurrencia = menos saturación
-  const PROD_DIRS = ['', 'tienda/'];
-  const PROD_EXTS = ['webp','jpg','jpeg','png','WEBP','JPG','JPEG','PNG'];
-
-  // Patrones probables únicamente (evitamos combinaciones explosivas)
-  function candidateUrls(n){
-    const baseNames = [
-      `modelos (${n})`, `modelos ${n}`,
-      `modelo (${n})`,  `modelo ${n}`,
-      `Remera (${n})`,  `Remera ${n}`,
-      `remera (${n})`,  `remera ${n}`
-    ];
-    const out = [];
-    for (const dir of PROD_DIRS){
-      for (const b of baseNames){
-        for (const ext of PROD_EXTS){
-          out.push(`${dir}${b}.${ext}`);
-        }
-      }
-    }
-    // Mantengo también exactamente "modelos (N)" como pediste
-    for (const dir of PROD_DIRS){
-      for (const ext of PROD_EXTS){
-        out.push(`${dir}modelos (${n}).${ext}`);
-      }
-    }
-    return out;
-  }
-
-  function tryLoad(src){
-    return new Promise(resolve=>{
-      const img = new Image();
-      let done=false; const finish=ok=>{ if(done) return; done=true; resolve(ok?src:null); };
-      const t=setTimeout(()=>finish(false), 5000);
-      img.onload=()=>{ clearTimeout(t); finish(true); };
-      img.onerror=()=>{ clearTimeout(t); finish(false); };
-      img.decoding = 'async';
-      img.loading = 'lazy';
-      img.src = src;
     });
-  }
 
-  async function firstExisting(n){
-    const candidates = candidateUrls(n);
-    for (const url of candidates){
-      const ok = await tryLoad(url);
-      if (ok) return ok;
+    // ---------- Helpers navbar ----------
+    function collapseNav(){
+      const oc = document.getElementById('navMobile');
+      if(!oc) return;
+      const inst = bootstrap.Offcanvas.getInstance(oc) || new bootstrap.Offcanvas(oc);
+      inst.hide();
     }
-    return null;
-  }
+    function setActive(link){
+      document.querySelectorAll('.navbar .nav-link').forEach(a=>a.classList.remove('active'));
+      link.classList.add('active');
+    }
+    function reloadHome(ev){
+      if (ev) ev.preventDefault();
+      try { collapseNav(); } catch {}
+      const url = window.location.href.split('#')[0];
+      window.history.replaceState(null, '', url);
+      window.location.reload();
+      return false;
+    }
 
-  // =================== Estado / Render ===================
-  let PRODUCTS = [];
-  const PRODUCT_MAP = new Map();
-  const grid = document.getElementById('grid');
-  const gridMoreWrap = document.getElementById('gridMoreWrap');
-  const gridMoreBtnMore = document.getElementById('gridMoreBtnMore');
-  const gridMoreBtnLess = document.getElementById('gridMoreBtnLess');
-  const PRODUCTS_VISIBLE_INIT = 8;
-  let productsVisible = PRODUCTS_VISIBLE_INIT;
-  let currentFiltered = [];
-  const selectedSizes = new Map();
+    // ==========================================================
+    //                  CONFIG / PRODUCTOS
+    // ==========================================================
+    // Precio por defecto para "la mayoría"
+    const STANDARD_PRICE = 43000;
 
-  const money = n => new Intl.NumberFormat('es-AR',{ style:'currency', currency:'ARS', maximumFractionDigits:0 }).format(n);
-  const getPrice = p => Number(p.price)||0;
+    // "Solo algunos" modelos marcados como NUEVOS (ajustá a gusto)
+    const NEW_MODELS = new Set([57,58,59,60,61]);
 
-  function computeTag(n){ return NEW_MODELS.has(n) ? 'Nuevo' : 'Popular'; }
+    // Prioridad de carga: se muestran apenas están listos (arranque instantáneo)
+    // Mezclo algunos nuevos y varios populares para variedad inmediata.
+    const PREFERRED_FIRST = [57,58,59,60,20,21,36,37];
 
-  function sizeChip(id, size){ return `<button type="button" class="size-chip" data-id="${id}" data-size="${size}" aria-pressed="false">${size}</button>`; }
-  function markSelected(btn){ btn.classList.add('selected'); btn.setAttribute('aria-pressed','true'); }
-  function bindSizeSelectors(){
-    grid.querySelectorAll('.size-chip').forEach(btn=>{
-      btn.addEventListener('click', () => {
-        const id = btn.dataset.id, size = btn.dataset.size;
-        btn.closest('.sizes').querySelectorAll('.size-chip').forEach(b=>{ b.classList.remove('selected'); b.setAttribute('aria-pressed','false'); });
-        markSelected(btn); selectedSizes.set(id, size);
+    // Rango total a descubrir en segundo plano
+    const PROD_MAX_INDEX = 120;
+
+    // Directorios y patrones (incluye misma carpeta '')
+    const PROD_DIRS     = ['', 'tienda/'];
+    const PROD_PREFIXES = ['modelos ', 'modelos', 'modelo ', 'modelo', 'Remera ', 'remera ', 'Remeras ', 'remeras '];
+    const PROD_SEPS     = ['(', '-', '_', ' '];
+    const PROD_EXTS     = ['webp','jpg','jpeg','png','WEBP','JPG','JPEG','PNG'];
+
+    const money = n => new Intl.NumberFormat('es-AR',{ style:'currency',currency:'ARS',maximumFractionDigits:0 }).format(n);
+    const getPrice = p => Number(p.price) || 0;
+
+    function computeTag(n){ return NEW_MODELS.has(n) ? 'Nuevo' : 'Popular'; }
+
+    function tryLoad(src){
+      return new Promise(resolve=>{
+        const img = new Image();
+        let done=false; const finish=ok=>{ if(done) return; done=true; resolve(ok?src:null); };
+        const t=setTimeout(()=>finish(false), 6000);
+        img.onload=()=>{ clearTimeout(t); finish(true); };
+        img.onerror=()=>{ clearTimeout(t); finish(false); };
+        img.src = encodeURI(src + (src.includes('?')?'&':'?') + 'v=' + Date.now());
       });
-    });
-  }
-
-  function upsertProduct(n, src){
-    const tag = computeTag(n);
-    PRODUCT_MAP.set(n, { id:'r'+n, name:'Remera '+n, price:STANDARD_PRICE, tag, src });
-    PRODUCTS = Array.from(PRODUCT_MAP.entries()).sort((a,b)=>a[0]-b[0]).map(([,p])=>p);
-    applyFilters();
-  }
-
-  function render(list){
-    grid.innerHTML = '';
-    if(!list.length){
-      grid.innerHTML = '<p class="text-center text-secondary">Cargando diseños…</p>';
-      return;
     }
-    for(const p of list){
-      const col = document.createElement('div');
-      col.className = 'col-6 col-lg-3';
-      col.innerHTML = `
-        <article class="card h-100" data-pid="${p.id}">
-          <div class="position-absolute m-2"><span class="badge ${p.tag==='Nuevo'?'badge-new':'badge-pop'}">${p.tag}</span></div>
-          <img class="card-img-top" src="${p.src}" alt="${p.name} con ilustración original" loading="lazy" decoding="async">
-          <div class="card-body d-flex flex-column">
-            <h3 class="product-title mb-1">${p.name}</h3>
-            <div class="price mb-2">${money(getPrice(p))}</div>
-            <div class="sizes mb-3" role="group" aria-label="Talles disponibles">
-              ${sizeChip(p.id,'S')}${sizeChip(p.id,'M')}${sizeChip(p.id,'L')}${sizeChip(p.id,'XL')}${sizeChip(p.id,'XXL')}
-            </div>
-            <button class="btn btn-accent mt-auto" onclick="addToCart('${p.id}')" aria-label="Agregar ${p.name} al carrito">Agregar al carrito</button>
-          </div>
-        </article>`;
-      grid.appendChild(col);
+
+    function candidateBases(n){
+      const pad2 = String(n).padStart(2,'0');
+      const bases = new Set();
+      for(const dir of PROD_DIRS){
+        for(const pref of PROD_PREFIXES){
+          for(const sep of PROD_SEPS){
+            bases.add(`${dir}${pref}${sep}${n}`);
+            bases.add(`${dir}${pref}${sep}${pad2}`);
+          }
+          bases.add(`${dir}${pref}${n}`);
+          bases.add(`${dir}${pref}${pad2}`);
+          bases.add(`${dir}${pref}(${n})`);
+        }
+        bases.add(`${dir}modelos (${n})`);
+      }
+      return Array.from(bases);
     }
-    bindSizeSelectors();
-    for(const [id, size] of selectedSizes){
-      const btn = grid.querySelector(\`.size-chip[data-id="\${id}"][data-size="\${size}"]\`);
-      if(btn) markSelected(btn);
-    }
-  }
 
-  function updateMoreProductsVisibility(total, visible){
-    const canExpand = total > PRODUCTS_VISIBLE_INIT;
-    gridMoreWrap.style.display = canExpand ? 'block' : 'none';
-    gridMoreBtnMore.style.display = (visible < total) ? 'inline-block' : 'none';
-    gridMoreBtnLess.style.display = (visible > PRODUCTS_VISIBLE_INIT) ? 'inline-block' : 'none';
-  }
-
-  // ---------- Filtros ----------
-  const searchInput = document.getElementById('searchInput');
-  const tagSelect   = document.getElementById('tagSelect');
-  const sortSelect  = document.getElementById('sortSelect');
-
-  function getPriceSafe(p){ return Number(p.price)||0; }
-
-  function applyFilters(){
-    const q = (searchInput.value || '').toLowerCase().trim();
-    const tag = (tagSelect.value || 'all').trim();
-    const ord = (sortSelect.value || 'default').trim();
-
-    let list = PRODUCTS.filter(p =>
-      (tag==='all' || p.tag===tag) &&
-      (q==='' || p.name.toLowerCase().includes(q))
-    );
-
-    const byId = (a,b) => (a.id||'').localeCompare(b.id||'', undefined, {numeric:true, sensitivity:'base'});
-
-    if (ord==='priceAsc')  list.sort((a,b)=> (getPriceSafe(a) - getPriceSafe(b)) || byId(a,b));
-    if (ord==='priceDesc') list.sort((a,b)=> (getPriceSafe(b) - getPriceSafe(a)) || byId(a,b));
-
-    currentFiltered = list;
-    productsVisible = Math.min(PRODUCTS_VISIBLE_INIT, list.length);
-    render(list.slice(0, productsVisible));
-    updateMoreProductsVisibility(list.length, productsVisible);
-  }
-
-  const debounce = (fn, ms=150) => { let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); }; };
-  searchInput.addEventListener('input', debounce(applyFilters, 120));
-  tagSelect.addEventListener('change', applyFilters);
-  sortSelect.addEventListener('change', applyFilters);
-
-  gridMoreBtnMore?.addEventListener('click', () => {
-    productsVisible = Math.min(productsVisible + 4, currentFiltered.length);
-    render(currentFiltered.slice(0, productsVisible));
-    updateMoreProductsVisibility(currentFiltered.length, productsVisible);
-  });
-  gridMoreBtnLess?.addEventListener('click', () => {
-    productsVisible = Math.min(PRODUCTS_VISIBLE_INIT, currentFiltered.length);
-    render(currentFiltered.slice(0, productsVisible));
-    updateMoreProductsVisibility(currentFiltered.length, productsVisible);
-    document.getElementById('tienda').scrollIntoView({ behavior:'smooth', block:'start' });
-  });
-
-  function applyMobileFilters(){
-    document.getElementById('tagSelect').value    = document.getElementById('tagSelectMobile').value;
-    document.getElementById('searchInput').value  = document.getElementById('searchInputMobile').value;
-    applyFilters();
-  }
-
-  // ---------- Carrito ----------
-  const CART_KEY = 'espaciales_cart';
-  const cartCountEl           = document.getElementById('cartCount');
-  const cartCountElMobileNav  = document.getElementById('cartCountMobileNav');
-  let toastAdd, toastSize;
-  document.addEventListener('DOMContentLoaded', () => {
-    try {
-      toastAdd  = new bootstrap.Toast(document.getElementById('cartToast'), { delay: 1400 });
-      toastSize = new bootstrap.Toast(document.getElementById('sizeToast'), { delay: 1400 });
-    } catch(e) { console.warn('Toast init:', e); }
-  });
-  const getCart = () => { try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch { return []; } };
-  const setCart = c => { localStorage.setItem(CART_KEY, JSON.stringify(c)); updateCartCount(); };
-  const updateCartCount = () => {
-    const total = getCart().reduce((acc, it)=>acc+it.qty, 0);
-    if (cartCountEl) cartCountEl.textContent = total;
-    if (cartCountElMobileNav) cartCountElMobileNav.textContent = total;
-  };
-  function addToCart(id){
-    const product = PRODUCTS.find(p=>p.id===id); if(!product) return;
-    const size = selectedSizes.get(id);
-    if(!size){ try{ toastSize?.show(); }catch{} return; }
-    const key = id + '::' + size;
-    const cart = getCart();
-    const idx = cart.findIndex(it=> (it.key===key));
-    if(idx>-1) cart[idx].qty += 1;
-    else cart.push({ key, id, name: product.name, price: getPrice(product), size, qty: 1, img: product.src, imgFull: product.src });
-    setCart(cart); try{ toastAdd?.show(); }catch{}
-  }
-
-  // ---------- Galería (acepta "nuevas (i).*" y "nuevo (i).*") ----------
-  const GAL_COUNT = 8;
-  const GAL_EXTS  = ['jpg','png','jpeg','JPG','PNG','JPEG'];
-  const GAL_NAME_BASES = ['nuevas', 'nuevo'];
-  let GALLERY_SRCS = [];
-  let galleryVisible = 4;
-
-  async function prepareGallerySources(){
-    const out = [];
-    for (let i = 1; i <= GAL_COUNT; i++){
-      let src = null;
-      outer:
-      for (const base of GAL_NAME_BASES){
-        for (const ext of GAL_EXTS){
-          const cand = `${base} (${i}).${ext}`;
-          const ok = await tryLoad(cand);
-          if (ok){ src = ok; break outer; }
+    async function checkFirstExistingForNumber(n){
+      const bases = candidateBases(n);
+      for(const base of bases){
+        for(const ext of PROD_EXTS){
+          const url = `${base}.${ext}`;
+          const ok = await tryLoad(url);
+          if (ok) return ok.replace(/[?&]v=\d+$/, '');
         }
       }
-      if (src) out.push(src);
-    }
-    return out;
-  }
-
-  function buildGallery(visible){
-    const galeriaGrid = document.getElementById('galeriaGrid');
-    const galeriaMoreWrap = document.getElementById('galeriaMoreWrap');
-    const btnMore = document.getElementById('galeriaMoreBtnMore');
-    const btnLess = document.getElementById('galeriaMoreBtnLess');
-
-    galeriaGrid.innerHTML = '';
-    const total = GALLERY_SRCS.length;
-
-    if(!total){
-      galeriaGrid.innerHTML = '<p class="text-secondary">No se encontraron imágenes. Usá nombres como <code>nuevas (1).jpg</code> o <code>nuevo (1).jpg</code> hasta (8).</p>';
-      galeriaMoreWrap.style.display = 'none';
-      return;
+      return null;
     }
 
-    const max = Math.min(visible, total);
-    for(let i=0;i<max;i++){
-      const src = GALLERY_SRCS[i];
-      const col = document.createElement('div');
-      col.className = 'col-6 col-md-3';
-      col.innerHTML = `
-        <div class="gallery-frame">
-          <img class="gallery-img img-fluid shadow-sm" src="${src}" alt="Galería ${i+1}" loading="lazy" decoding="async">
-        </div>`;
-      galeriaGrid.appendChild(col);
+    // ---------------- Estado / render ----------------
+    let PRODUCTS = [];                 // Array ordenado por número
+    const PRODUCT_MAP = new Map();     // n -> producto
+    const grid = document.getElementById('grid');
+    const gridMoreWrap = document.getElementById('gridMoreWrap');
+    const gridMoreBtnMore = document.getElementById('gridMoreBtnMore');
+    const gridMoreBtnLess = document.getElementById('gridMoreBtnLess');
+    const PRODUCTS_VISIBLE_INIT = 8;
+    let productsVisible = PRODUCTS_VISIBLE_INIT;
+    let currentFiltered = [];
+    const selectedSizes = new Map();
+
+    function upsertProduct(n, src){
+      const tag = computeTag(n);
+      PRODUCT_MAP.set(n, {
+        id: 'r'+n,
+        name: 'Remera '+n,
+        price: STANDARD_PRICE,
+        tag,
+        src
+      });
+      PRODUCTS = Array.from(PRODUCT_MAP.entries())
+        .sort((a,b)=> a[0]-b[0])
+        .map(([,p])=>p);
+      applyFilters(); // refresca vista al instante
     }
 
-    const showControls = total > 4;
-    galeriaMoreWrap.style.display = showControls ? 'block' : 'none';
-    btnMore.style.display = (max < total) ? 'inline-block' : 'none';
-    btnLess.style.display = (max > 4) ? 'inline-block' : 'none';
-
-    btnMore.onclick = () => { galleryVisible = total; buildGallery(galleryVisible); };
-    btnLess.onclick = () => {
-      galleryVisible = 4; buildGallery(galleryVisible);
-      document.getElementById('galeria').scrollIntoView({ behavior:'smooth', block:'start' });
-    };
-  }
-
-  // ---------- Descubrimiento de productos (limitado) ----------
-  async function discoverPreferredFirst(){
-    for (const n of PREFERRED_FIRST){
-      firstExisting(n).then(src=>{ if (src) upsertProduct(n, src); });
+    function sizeChip(id, size){ return `<button type="button" class="size-chip" data-id="${id}" data-size="${size}" aria-pressed="false">${size}</button>`; }
+    function markSelected(btn){ btn.classList.add('selected'); btn.setAttribute('aria-pressed','true'); }
+    function bindSizeSelectors(){
+      grid.querySelectorAll('.size-chip').forEach(btn=>{
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.id, size = btn.dataset.size;
+          btn.closest('.sizes').querySelectorAll('.size-chip').forEach(b=>{ b.classList.remove('selected'); b.setAttribute('aria-pressed','false'); });
+          markSelected(btn); selectedSizes.set(id, size);
+        });
+      });
     }
-  }
 
-  async function discoverRestInBackground(){
-    const preferred = new Set(PREFERRED_FIRST);
-    const pool = [];
-    for (let n=1; n<=PROD_MAX_INDEX; n++){
-      if (!preferred.has(n)) pool.push(n);
-    }
-    let idx = 0;
-    async function worker(){
-      while (idx < pool.length){
-        const n = pool[idx++];
-        const src = await firstExisting(n);
-        if (src) upsertProduct(n, src);
-        // respirito para no saturar
-        await new Promise(r=>setTimeout(r, 60));
+    function render(list){
+      grid.innerHTML = '';
+      if(!list.length){ grid.innerHTML = '<p class="text-center text-secondary">Cargando diseños…</p>'; return; }
+      for(const p of list){
+        const col = document.createElement('div');
+        col.className = 'col-6 col-lg-3';
+        col.innerHTML = `
+          <article class="card h-100" data-pid="${p.id}">
+            <div class="position-absolute m-2"><span class="badge ${p.tag==='Nuevo'?'badge-new':'badge-pop'}">${p.tag}</span></div>
+            <img class="card-img-top" src="${p.src}" alt="${p.name} con ilustración original" loading="eager" decoding="async">
+            <div class="card-body d-flex flex-column">
+              <h3 class="product-title mb-1">${p.name}</h3>
+              <div class="price mb-2">${money(getPrice(p))}</div>
+              <div class="sizes mb-3" role="group" aria-label="Talles disponibles">
+                ${sizeChip(p.id,'S')}${sizeChip(p.id,'M')}${sizeChip(p.id,'L')}${sizeChip(p.id,'XL')}${sizeChip(p.id,'XXL')}
+              </div>
+              <button class="btn btn-accent mt-auto" onclick="addToCart('${p.id}')" aria-label="Agregar ${p.name} al carrito">Agregar al carrito</button>
+            </div>
+          </article>`;
+        grid.appendChild(col);
+      }
+      bindSizeSelectors();
+      for(const [id, size] of selectedSizes){
+        const btn = grid.querySelector(`.size-chip[data-id="${id}"][data-size="${size}"]`);
+        if(btn) markSelected(btn);
       }
     }
-    await Promise.all(Array.from({length:MAX_WORKERS}, worker));
-  }
 
-  // ---------- Init ----------
-  (async () => {
-    try {
-      // Productos
+    function updateMoreProductsVisibility(total, visible){
+      const canExpand = total > PRODUCTS_VISIBLE_INIT;
+      gridMoreWrap.style.display = canExpand ? 'block' : 'none';
+      gridMoreBtnMore.style.display = (visible < total) ? 'inline-block' : 'none';
+      gridMoreBtnLess.style.display = (visible > PRODUCTS_VISIBLE_INIT) ? 'inline-block' : 'none';
+      gridMoreBtnMore.setAttribute('aria-expanded', String(visible < total));
+      gridMoreBtnLess.setAttribute('aria-expanded', String(visible > PRODUCTS_VISIBLE_INIT));
+    }
+
+    // ---------------- Filtros ----------------
+    const searchInput = document.getElementById('searchInput');
+    const tagSelect   = document.getElementById('tagSelect');
+    const sortSelect  = document.getElementById('sortSelect');
+
+    function getPriceSafe(p){ return Number(p.price)||0; }
+
+    function applyFilters(){
+      const q = (searchInput.value || '').toLowerCase().trim();
+      const tag = (tagSelect.value || 'all').trim();
+      const ord = (sortSelect.value || 'default').trim();
+
+      let list = PRODUCTS.filter(p =>
+        (tag==='all' || p.tag===tag) &&
+        (q==='' || p.name.toLowerCase().includes(q))
+      );
+
+      const byId = (a,b) => (a.id||'').localeCompare(b.id||'', undefined, {numeric:true, sensitivity:'base'});
+
+      if (ord==='priceAsc')  list.sort((a,b)=> (getPriceSafe(a) - getPriceSafe(b)) || byId(a,b));
+      if (ord==='priceDesc') list.sort((a,b)=> (getPriceSafe(b) - getPriceSafe(a)) || byId(a,b));
+
+      currentFiltered = list;
+      productsVisible = Math.min(PRODUCTS_VISIBLE_INIT, list.length);
+      render(list.slice(0, productsVisible));
+      updateMoreProductsVisibility(list.length, productsVisible);
+    }
+
+    const debounce = (fn, ms=150) => { let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); }; };
+    searchInput.addEventListener('input', debounce(applyFilters, 120));
+    tagSelect.addEventListener('change', applyFilters);
+    sortSelect.addEventListener('change', applyFilters);
+
+    document.getElementById('gridMoreBtnMore')?.addEventListener('click', () => {
+      productsVisible = Math.min(productsVisible + 4, currentFiltered.length);
+      render(currentFiltered.slice(0, productsVisible));
+      updateMoreProductsVisibility(currentFiltered.length, productsVisible);
+    });
+    document.getElementById('gridMoreBtnLess')?.addEventListener('click', () => {
+      productsVisible = Math.min(PRODUCTS_VISIBLE_INIT, currentFiltered.length);
+      render(currentFiltered.slice(0, productsVisible));
+      updateMoreProductsVisibility(currentFiltered.length, productsVisible);
+      document.getElementById('tienda').scrollIntoView({ behavior:'smooth', block:'start' });
+    });
+
+    function applyMobileFilters(){
+      document.getElementById('tagSelect').value    = document.getElementById('tagSelectMobile').value;
+      document.getElementById('searchInput').value  = document.getElementById('searchInputMobile').value;
+      applyFilters();
+    }
+
+    // ---------------- Carrito simple ----------------
+    const CART_KEY = 'espaciales_cart';
+    const cartCountEl           = document.getElementById('cartCount');
+    const cartCountElMobileNav  = document.getElementById('cartCountMobileNav');
+    const toastAdd  = new bootstrap.Toast(document.getElementById('cartToast'), { delay: 1400 });
+    const toastSize = new bootstrap.Toast(document.getElementById('sizeToast'), { delay: 1400 });
+    const getCart = () => { try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch { return []; } };
+    const setCart = c => { localStorage.setItem(CART_KEY, JSON.stringify(c)); updateCartCount(); };
+    const updateCartCount = () => {
+      const total = getCart().reduce((acc, it)=>acc+it.qty, 0);
+      if (cartCountEl) cartCountEl.textContent = total;
+      if (cartCountElMobileNav) cartCountElMobileNav.textContent = total;
+    };
+    function addToCart(id){
+      const product = PRODUCTS.find(p=>p.id===id); if(!product) return;
+      const size = selectedSizes.get(id);
+      if(!size){ toastSize.show(); return; }
+      const key = id + '::' + size;
+      const cart = getCart();
+      const idx = cart.findIndex(it=> (it.key===key));
+      if(idx>-1) cart[idx].qty += 1;
+      else cart.push({ key, id, name: product.name, price: getPrice(product), size, qty: 1, img: product.src, imgFull: product.src });
+      setCart(cart); toastAdd.show();
+    }
+
+    // ---------------- Galería simple (nuevas/nueva/nuevo (1..8).jpg/.png/.jpeg) ----------------
+    const GAL_COUNT = 8;
+    const GAL_EXTS  = ['jpg','png','jpeg','JPG','PNG','JPEG'];
+    const GAL_NAME_BASES = ['nuevas', 'nuevo', 'nueva']; // <<< agregado 'nueva'
+    let GALLERY_SRCS = [];
+    let galleryVisible = 4;
+
+    async function prepareGallerySources(){
+      const out = [];
+      for (let i = 1; i <= GAL_COUNT; i++){
+        let src = null;
+        outer:
+        for (const base of GAL_NAME_BASES){
+          for (const ext of GAL_EXTS){
+            const cand = `${base} (${i}).${ext}`;
+            const ok = await tryLoad(cand);
+            if (ok){ src = ok; break outer; }
+          }
+        }
+        if (src) out.push(src);
+      }
+      return out;
+    }
+
+    function buildGallery(visible){
+      const galeriaGrid = document.getElementById('galeriaGrid');
+      const galeriaMoreWrap = document.getElementById('galeriaMoreWrap');
+      const btnMore = document.getElementById('galeriaMoreBtnMore');
+      const btnLess = document.getElementById('galeriaMoreBtnLess');
+
+      galeriaGrid.innerHTML = '';
+      const total = GALLERY_SRCS.length;
+
+      if(!total){
+        galeriaGrid.innerHTML = '<p class="text-secondary">No se encontraron imágenes. Usá nombres como <code>nuevas (1).jpg</code>, <code>nueva (1).jpg</code> o <code>nuevo (1).jpg</code> hasta (8).</p>';
+        galeriaMoreWrap.style.display = 'none';
+        return;
+      }
+
+      const max = Math.min(visible, total);
+      for(let i=0;i<max;i++){
+        const src = GALLERY_SRCS[i];
+        const col = document.createElement('div');
+        col.className = 'col-6 col-md-3';
+        col.innerHTML = `
+          <div class="gallery-frame">
+            <img class="gallery-img img-fluid shadow-sm" src="${src}" alt="Galería ${i+1}" loading="lazy" decoding="async">
+          </div>`;
+        galeriaGrid.appendChild(col);
+      }
+
+      const showControls = total > 4;
+      galeriaMoreWrap.style.display = showControls ? 'block' : 'none';
+      btnMore.style.display = (max < total) ? 'inline-block' : 'none';
+      btnLess.style.display = (max > 4) ? 'inline-block' : 'none';
+
+      btnMore.onclick = () => { galleryVisible = total; buildGallery(galleryVisible); };
+      btnLess.onclick = () => {
+        galleryVisible = 4; buildGallery(galleryVisible);
+        document.getElementById('galeria').scrollIntoView({ behavior:'smooth', block:'start' });
+      };
+    }
+
+    // ---------------- Descubrimiento de productos ----------------
+    async function discoverPreferredFirst(){
+      // Lanza búsquedas SIN esperar al resto: aparecen apenas resuelven.
+      for (const n of PREFERRED_FIRST){
+        checkFirstExistingForNumber(n).then(src=>{
+          if (src) upsertProduct(n, src);
+        });
+      }
+    }
+
+    async function discoverRestInBackground(){
+      const preferredSet = new Set(PREFERRED_FIRST);
+      const tasks = Array.from({length: PROD_MAX_INDEX}, (_,i)=> i+1).filter(n=> !preferredSet.has(n));
+      let idx = 0;
+      function next(){ const n = tasks[idx++]; return n===undefined ? null : n; }
+      async function worker(){
+        for(;;){
+          const n = next(); if (n===null) break;
+          const src = await checkFirstExistingForNumber(n);
+          if (src) upsertProduct(n, src);
+        }
+      }
+      const workers = Array.from({length: 6}, ()=>worker());
+      await Promise.all(workers);
+    }
+
+    // ---------- Init ----------
+    (async () => {
+      // Productos: aparición lo antes posible
       discoverPreferredFirst();
-      // Arrancamos el resto cuando el hilo principal está libre
-      window.addEventListener('load', () => { discoverRestInBackground(); });
+      discoverRestInBackground();
       updateCartCount();
 
       // Galería
       GALLERY_SRCS = await prepareGallerySources();
       buildGallery(galleryVisible);
-    } catch (e) {
-      console.error('Error inicializando la app:', e);
-      const msg = document.createElement('p');
-      msg.className = 'text-danger text-center';
-      msg.textContent = 'Hubo un error inicializando la tienda. Revisá la consola del navegador.';
-      grid.replaceWith(msg);
-    }
-  })();
+    })();
 
-  // Exponer helpers para onclick inline
-  window.applyMobileFilters = applyMobileFilters;
-  window.addToCart = addToCart;
-  window.collapseNav = collapseNav;
-  window.setActive = setActive;
-
-  // ---------- Debug útil ----------
-  window.addEventListener('error', (e)=>console.error('JS error:', e.error||e.message));
-  window.addEventListener('unhandledrejection', (e)=>console.error('Promise rejection:', e.reason));
+    // Exponer helpers
+    window.applyMobileFilters = applyMobileFilters;
+    window.addToCart = addToCart;
+    window.collapseNav = collapseNav;
+    window.setActive = setActive;
   </script>
 </body>
 </html>
