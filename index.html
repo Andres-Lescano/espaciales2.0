@@ -7,122 +7,25 @@
   <meta name="description" content="Tienda Espaciales: remeras ilustradas con dibujos únicos. Envío gratis desde 3 remeras. Talles S, M, L, XL.">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- PRELOAD: carrusel + sobre mí (mismo folder que este HTML) -->
+  <!-- PRELOAD (mismo folder que este HTML) -->
   <link rel="preload" as="image" href="astronautasss (2).jpg">
   <link rel="preload" as="image" href="gato.jpg">
   <link rel="preload" as="image" href="gato.PNG">
   <link rel="preload" as="image" href="alien.jpg">
   <link rel="preload" as="image" href="valen3.jpg">
-  <!-- PRELOAD: video -->
-  <link rel="preload" as="video" href="video.MOV" type="video/quicktime">
+  <link rel="preload" as="video"  href="video.MOV" type="video/quicktime">
 
-  <style>
-    :root{
-      --bg:#000; --fg:#fff; --accent:#C7F9CC; --muted:#9aa0a6; --radius:12px;
-      /* ===== Tamaños sección media (editable) ===== */
-      --media-max: 480px;     /* ancho máx. desktop */
-      --media-max-sm: 360px;  /* ancho máx. móvil */
-      --media-radius: 16px;   /* borde redondeado img/video */
-    }
-    html{ scroll-behavior:smooth; scroll-padding-top:78px; }
-    body{background:var(--bg); color:var(--fg);}
-    .navbar{background:#000;}
-    .navbar .nav-link, .navbar .navbar-brand{color:var(--fg);}
-    .navbar .nav-link.active{color:var(--accent)!important;}
-    .shipping-bar{background:var(--accent); color:#0a0a0a; font-weight:800; letter-spacing:.5px;}
-
-    /* Botón carrito móvil compacto */
-    .btn-cart-mobile{ padding:.35rem .6rem; display:inline-flex; align-items:center; gap:.35rem; font-weight:600; }
-    #cartCountMobileNav{ min-width:1.25rem; line-height:1.1rem; }
-
-    /* ===== HERO ===== */
-    .hero{
-      --hero-h: 56vh;
-      height: var(--hero-h);
-      display:grid; place-items:end start;
-      padding:3rem 0;
-      position:relative; overflow:hidden; background:#000;
-    }
-    .hero-inner{position:relative; z-index:2}
-    .hero h1{font-weight:900; letter-spacing:.5px; text-shadow:0 0 12px rgba(0,0,0,.35);}
-    .hero .claim{color:var(--accent); font-size:1.35rem; text-shadow:0 0 10px rgba(0,0,0,.35);}
-
-    .hero-bg{ position:absolute; inset:0; z-index:0; height:100%; background:#000; }
-    .hero-bg .carousel-inner{ height:100%; }
-    .hero-bg .carousel-item{ height:100%; position:relative; }
-    .hero-bg .carousel-item img{ width:100%; height:100%; object-fit:cover; object-position:center; display:block; }
-
-    /* ===== Mobile hero ===== */
-    @media (max-width:576px){
-      .hero{ height:auto; display:block; padding:0 0 1rem 0; }
-      .hero-bg{ position:relative; height:310px; overflow:hidden; background:#000; }
-      .hero .claim{ font-size:1.05rem; }
-      .hero h1{ font-size:2rem; }
-      .hero-inner{ position:static; z-index:auto; padding:1rem 1rem 0; text-align:center; }
-      .hero-bg .carousel-inner, .hero-bg .carousel-item{ height:100%; }
-      .hero-bg .carousel-item img{ width:100%; height:100%; object-fit:cover; object-position:center; transform:scale(1.22); transform-origin:center center; }
-    }
-
-    /* ===== Cards de tienda ===== */
-    .filter-btn{border:1px solid #2b2b2b; color:var(--fg);}
-    .badge-new{background:var(--accent); color:#0a0a0a; font-weight:700}
-    .badge-pop{background:#222; color:#ddd; border:1px solid #2a2a2a}
-    .card{background:#0f0f0f; border:1px solid #1c1c1c; border-radius:var(--radius); overflow:hidden; transition:transform .2s, box-shadow .2s;}
-    .card:hover{transform:translateY(-4px); box-shadow:0 18px 40px rgba(0,0,0,.45);}
-    .card-img-top{aspect-ratio:4/5; object-fit:cover; background:#000;}
-    .product-title{ font-weight:800; font-size:1.1rem; letter-spacing:.2px; color:#fff; }
-    .price{ font-weight:900; letter-spacing:.3px; font-size:1.25rem; color:var(--accent); }
-
-    /* Chips de talle */
-    .sizes{ display:flex; flex-wrap:wrap; gap:.5rem; }
-    .size-chip{ border:1px solid #2b2b2b; border-radius:999px; padding:.2rem .7rem; font-size:.9rem; line-height:1.2; cursor:pointer; user-select:none; background:#0b0b0b; color:#fff; transition:transform .05s ease, box-shadow .1s ease, border-color .1s ease; }
-    .size-chip:active{ transform:scale(0.98); }
-    .size-chip.selected{ background:var(--accent); color:#0a0a0a; border-color:var(--accent); box-shadow:0 0 0 3px rgba(199,249,204,.2); }
-    .btn-accent{background:var(--accent); color:#0a0a0a; border:none;}
-    .btn-accent:hover{filter:brightness(.95);}
-    .search-input{background:#0b0b0b; border:1px solid #242424; color:#fff;}
-    footer a{color:var(--accent); text-decoration:none;}
-
-    /* ===== Botones Ver más / Ver menos ===== */
-    .more-wrap{ display:none; }
-    .more-actions{ display:inline-flex; gap:.75rem; }
-    .more-btn{ background:var(--accent); color:#0a0a0a; border:none; font-weight:800; padding:.6rem 1.2rem; border-radius:999px; box-shadow:0 10px 24px rgba(199,249,204,.35); letter-spacing:.2px; }
-    .more-btn:hover{ filter:brightness(.95); transform:translateY(-1px); }
-
-    /* ===== Galería sin recortes ===== */
-    .gallery-frame{ aspect-ratio: 4 / 5; background:#0b0b0b; border:1px solid #1c1c1c; border-radius:14px; display:grid; place-items:center; overflow:hidden; }
-    .gallery-img{ width:100%; height:100%; object-fit:contain; }
-
-    /* ===== Sobre mí ===== */
-    .about-img{ border-radius:18px; }
-    .about-hr{ max-width:90%; margin:4rem auto; border-color:#2a2a2a; opacity:.6; }
-    .contact a{ color:var(--fg); text-decoration:none; }
-    .contact a:hover{ color:#C7F9CC; }
-    #sobre-mi .text-secondary{ color:#d6d6d6 !important; }
-
-    /* ===== Media (imagen + video) ===== */
-    #media .media-box{ max-width: var(--media-max); width:100%; }
-    #media img, #media video{ border-radius: var(--media-radius); }
-    @media (max-width: 576px){ #media .media-box{ max-width: var(--media-max-sm); } }
-
-    /* ===== Noticias ===== */
-    #noticias .news-card{ background:#0f0f0f; border:1px solid #1c1c1c; border-radius:16px; overflow:hidden; height:100%; }
-    #noticias .news-media{ aspect-ratio: 16/9; width:100%; object-fit:cover; display:block; background:#0b0b0b; }
-    #noticias .news-title{ font-weight:800; letter-spacing:.2px; }
-    #noticias .news-meta{ color:#b9b9b9; font-size:.9rem; }
-    #noticias .ig-badge{ background:var(--accent); color:#0a0a0a; font-weight:800; }
-  </style>
+<link rel="stylesheet" href="archivo.css">
 </head>
 <body>
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
     <div class="container align-items-center">
-      <!-- Logo: recarga -->
       <a class="navbar-brand d-flex align-items-center" href="#" onclick="return reloadHome(event)" title="Recargar inicio">
         <img src="logo.png" alt="Espaciales Logo" style="height: 40px; max-height: 40px; width: auto;">
       </a>
 
-      <!-- Grupo móvil: Carrito SIEMPRE visible + hamburguesa -->
+      <!-- Móvil: carrito + hamburguesa -->
       <div class="d-lg-none ms-auto d-flex align-items-center gap-2">
         <a class="btn btn-outline-light btn-sm position-relative btn-cart-mobile" href="carrito.html" aria-label="Ir al carrito">
           🛒 Carrito
@@ -133,10 +36,9 @@
         </button>
       </div>
 
-      <!-- Navegación + carrito desktop -->
+      <!-- Desktop -->
       <div class="d-none d-lg-flex align-items-center ms-auto">
         <ul class="navbar-nav me-3">
-          <!-- INICIO activo por defecto -->
           <li class="nav-item"><a class="nav-link active" href="#inicio" onclick="setActive(this)">INICIO</a></li>
           <li class="nav-item"><a class="nav-link" href="#tienda" onclick="setActive(this)">TIENDA</a></li>
           <li class="nav-item"><a class="nav-link" href="#noticias" onclick="setActive(this)">NOTICIAS</a></li>
@@ -149,7 +51,7 @@
         </a>
       </div>
 
-      <!-- Offcanvas (móvil): solo links (sin carrito duplicado) -->
+      <!-- Offcanvas móvil -->
       <div class="offcanvas offcanvas-end text-bg-dark d-lg-none" tabindex="-1" id="navMobile" aria-labelledby="navMobileLabel">
         <div class="offcanvas-header">
           <h5 id="navMobileLabel" class="offcanvas-title">Menú</h5>
@@ -193,12 +95,16 @@
       <div class="col-12 col-md-6"><input id="searchInput" class="form-control form-control-lg search-input" type="search" placeholder="Buscar diseño..." aria-label="Buscar diseño"></div>
       <div class="col-6 col-md-3">
         <select id="tagSelect" class="form-select bg-black text-white border-secondary" aria-label="Filtrar por etiqueta">
-          <option value="all">Todas las etiquetas</option><option value="Nuevo">Nuevo</option><option value="Popular">Popular</option>
+          <option value="all">Todas las etiquetas</option>
+          <option value="Nuevo">Nuevo</option>
+          <option value="Popular">Popular</option>
         </select>
       </div>
       <div class="col-6 col-md-3">
         <select id="sortSelect" class="form-select bg-black text-white border-secondary" aria-label="Ordenar por precio">
-          <option value="default">Ordenar</option><option value="priceAsc">Precio: menor a mayor</option><option value="priceDesc">Precio: mayor a menor</option>
+          <option value="default">Ordenar</option>
+          <option value="priceAsc">Precio: menor a mayor</option>
+          <option value="priceDesc">Precio: mayor a menor</option>
         </select>
       </div>
     </div>
@@ -268,7 +174,7 @@
       <div class="col-12 col-md-auto d-flex justify-content-center justify-content-md-start">
         <div class="media-box">
           <video class="w-100 shadow border border-secondary" controls playsinline preload="metadata" style="max-width: 100%; height: auto; width: 100%; max-height: 550px; object-fit: cover;">
-            <source src="video.MOV" >
+            <source src="video.MOV">
             Tu navegador no soporta el video. Podés descargarlo desde <a href="video.MOV">acá</a>.
           </video>
         </div>
@@ -351,121 +257,116 @@
       return false;
     }
 
-    // ---------- Config (mismo directorio) ----------
+    // ==========================================================
+    //                  CONFIG / PRODUCTOS
+    // ==========================================================
     const STANDARD_PRICE = 43000;
     const OVERRIDE_PRICE = 41000;
-    const POPULAR_MODELS = new Set([20,21,36,37,38,39,40,41]); // populares $41.000
+    const POPULAR_MODELS = new Set([20,21,36,37,38,39,40,41]);
 
-    const PROD_BASE = '';                 // mismo folder
-    const PROD_PREFIX = 'modelos ';       // nombre base
-    const PROD_MAX_INDEX = 120;           // hasta 120 modelos
-    const PROD_EXTS = ['webp','jpg','jpeg','png','WEBP','JPG','JPEG','PNG']; // tolerante a may/min
+    // Directorios y patrones (incluye misma carpeta '')
+    const PROD_DIRS     = ['', 'tienda/'];
+    const PROD_PREFIXES = ['modelos ', 'modelos', 'modelo ', 'modelo', 'Remera ', 'remera ', 'Remeras ', 'remeras '];
+    const PROD_SEPS     = ['(', '-', '_', ' '];
+    const PROD_MAX_INDEX= 120;
+    const PROD_EXTS     = ['webp','jpg','jpeg','png','WEBP','JPG','JPEG','PNG'];
 
-    // ---------- Utils ----------
     const money = n => new Intl.NumberFormat('es-AR',{ style:'currency',currency:'ARS',maximumFractionDigits:0 }).format(n);
     const getPrice = p => Number(p.price) || 0;
 
-    // Encuentra la primera imagen existente entre candidatos (reutilizable)
-    function checkFirstExisting(candidates){
+    function tryLoad(src){
       return new Promise(resolve=>{
-        let i=0;
-        const tryNext=()=>{
-          if(i>=candidates.length) return resolve(null);
-          const url=candidates[i++];
-          const test = new Image();
-          test.onload = ()=>resolve(url);
-          test.onerror= tryNext;
-          test.src = url + '?v=' + Date.now(); // cache-buster
-        };
-        tryNext();
+        const img = new Image();
+        let done=false; const finish=ok=>{ if(done) return; done=true; resolve(ok?src:null); };
+        const t=setTimeout(()=>finish(false), 6000);
+        img.onload=()=>{ clearTimeout(t); finish(true); };
+        img.onerror=()=>{ clearTimeout(t); finish(false); };
+        img.src = encodeURI(src + (src.includes('?')?'&':'?') + 'v=' + Date.now());
       });
     }
 
-    // Fallback de imagen a partir del "fileBase"
-    function imgFallbackFromBase(el, fileBase){
-      const candidates = PROD_EXTS.map(ext => `${PROD_BASE}${fileBase}.${ext}`);
-      let idx = Number(el.dataset.fidx || 0);
-      idx++;
-      if (idx >= candidates.length){
-        el.alt += ' (imagen no encontrada)';
-        return;
+    function candidateBases(n){
+      const pad2 = String(n).padStart(2,'0');
+      const bases = new Set();
+      for(const dir of PROD_DIRS){
+        for(const pref of PROD_PREFIXES){
+          for(const sep of PROD_SEPS){
+            bases.add(`${dir}${pref}${sep}${n}`);
+            bases.add(`${dir}${pref}${sep}${pad2}`);
+          }
+          bases.add(`${dir}${pref}${n}`);
+          bases.add(`${dir}${pref}${pad2}`);
+          bases.add(`${dir}${pref}(${n})`);
+        }
+        bases.add(`${dir}modelos (${n})`);
       }
-      el.dataset.fidx = idx;
-      el.src = candidates[idx];
+      return Array.from(bases);
     }
 
-    // ---------- Descubrimiento dinámico de productos ----------
-    async function discoverProducts(){
-      const items = [];
-      for (let n=1; n<=PROD_MAX_INDEX; n++){
-        const base = `${PROD_PREFIX}(${n})`;
-        const candidates = PROD_EXTS.map(ext => `${PROD_BASE}${base}.${ext}`);
-        // eslint-disable-next-line no-await-in-loop
-        const src = await checkFirstExisting(candidates);
-        if (src){
-          items.push({ n, base, src });
+    async function checkFirstExistingForNumber(n){
+      const bases = candidateBases(n);
+      for(const base of bases){
+        for(const ext of PROD_EXTS){
+          const url = `${base}.${ext}`;
+          const ok = await tryLoad(url);
+          if (ok) return ok.replace(/[?&]v=\d+$/, '');
         }
       }
-      return items;
+      return null;
     }
 
-    // ---------- Estado / Render productos ----------
-    let PRODUCTS = []; // se llena dinámicamente
+    // Skeleton mientras carga productos
+    function renderSkeleton(count=8){
+      const grid = document.getElementById('grid');
+      grid.innerHTML = '';
+      for(let i=0;i<count;i++){
+        const col = document.createElement('div');
+        col.className = 'col-6 col-lg-3';
+        col.innerHTML = `<div class="skeleton"><div class="ph"></div><div class="line" style="width:70%"></div><div class="line" style="width:40%"></div><div class="line" style="width:85%"></div></div>`;
+        grid.appendChild(col);
+      }
+    }
+
+    // Estado / render de productos
+    let PRODUCTS = [];
     const grid = document.getElementById('grid');
     const gridMoreWrap = document.getElementById('gridMoreWrap');
     const gridMoreBtnMore = document.getElementById('gridMoreBtnMore');
     const gridMoreBtnLess = document.getElementById('gridMoreBtnLess');
-
-    const PRODUCTS_VISIBLE_INIT = 8;     // visibles al cargar y al "Ver menos"
-    const PRODUCTS_PAGE_SIZE   = 4;      // cuánto suma cada clic en "Ver más"
-
+    const PRODUCTS_VISIBLE_INIT = 8;
     let productsVisible = PRODUCTS_VISIBLE_INIT;
     let currentFiltered = [];
     const selectedSizes = new Map();
 
-    function sizeChip(id, size){
-      return `<button type="button" class="size-chip" data-id="${id}" data-size="${size}" aria-pressed="false">${size}</button>`;
-    }
-
+    function sizeChip(id, size){ return `<button type="button" class="size-chip" data-id="${id}" data-size="${size}" aria-pressed="false">${size}</button>`; }
     function markSelected(btn){ btn.classList.add('selected'); btn.setAttribute('aria-pressed','true'); }
-
     function bindSizeSelectors(){
       grid.querySelectorAll('.size-chip').forEach(btn=>{
         btn.addEventListener('click', () => {
-          const id = btn.dataset.id;
-          const size = btn.dataset.size;
-          btn.closest('.sizes').querySelectorAll('.size-chip').forEach(b=>{
-            b.classList.remove('selected');
-            b.setAttribute('aria-pressed','false');
-          });
-          markSelected(btn);
-          selectedSizes.set(id, size);
+          const id = btn.dataset.id, size = btn.dataset.size;
+          btn.closest('.sizes').querySelectorAll('.size-chip').forEach(b=>{ b.classList.remove('selected'); b.setAttribute('aria-pressed','false'); });
+          markSelected(btn); selectedSizes.set(id, size);
         });
       });
     }
 
     function render(list){
       grid.innerHTML = '';
-      if(!list.length){
-        grid.innerHTML = '<p class="text-center text-secondary">No se encontraron productos con esos filtros.</p>';
-        return;
-      }
+      if(!list.length){ grid.innerHTML = '<p class="text-center text-secondary">No se encontraron productos con esos filtros.</p>'; return; }
       for(const p of list){
         const col = document.createElement('div');
         col.className = 'col-6 col-lg-3';
-
         col.innerHTML = `
           <article class="card h-100" data-pid="${p.id}">
             <div class="position-absolute m-2"><span class="badge ${p.tag==='Nuevo'?'badge-new':'badge-pop'}">${p.tag}</span></div>
-            <img class="card-img-top" src="${p.src}" alt="${p.name} con ilustración original" loading="lazy"
-                 data-fidx="0" onerror="imgFallbackFromBase(this,'${p.fileBase}')">
+            <img class="card-img-top" src="${p.src}" alt="${p.name} con ilustración original" loading="lazy" decoding="async">
             <div class="card-body d-flex flex-column">
               <h3 class="product-title mb-1">${p.name}</h3>
               <div class="price mb-2">${money(getPrice(p))}</div>
               <div class="sizes mb-3" role="group" aria-label="Talles disponibles">
                 ${sizeChip(p.id,'S')}${sizeChip(p.id,'M')}${sizeChip(p.id,'L')}${sizeChip(p.id,'XL')}${sizeChip(p.id,'XXL')}
               </div>
-              <button class="btn btn-accent mt-auto" data-pid="${p.id}" onclick="addToCart('${p.id}')" aria-label="Agregar ${p.name} al carrito">Agregar al carrito</button>
+              <button class="btn btn-accent mt-auto" onclick="addToCart('${p.id}')" aria-label="Agregar ${p.name} al carrito">Agregar al carrito</button>
             </div>
           </article>`;
         grid.appendChild(col);
@@ -486,29 +387,24 @@
       gridMoreBtnLess.setAttribute('aria-expanded', String(visible > PRODUCTS_VISIBLE_INIT));
     }
 
-    // Filtros / búsqueda / orden
+    // Filtros
     const searchInput = document.getElementById('searchInput');
-    const tagSelect = document.getElementById('tagSelect');
-    const sortSelect = document.getElementById('sortSelect');
+    const tagSelect   = document.getElementById('tagSelect');
+    const sortSelect  = document.getElementById('sortSelect');
+
+    function getPriceSafe(p){ return Number(p.price)||0; }
 
     function applyFilters(){
       const q = (searchInput.value || '').toLowerCase().trim();
       const tag = (tagSelect.value || 'all').trim();
       const ord = (sortSelect.value || 'default').trim();
 
-      let list = PRODUCTS.filter(p =>
-        (tag==='all' || p.tag===tag) &&
-        (q==='' || p.name.toLowerCase().includes(q))
-      );
+      let list = PRODUCTS.filter(p => (tag==='all' || p.tag===tag) && (q==='' || p.name.toLowerCase().includes(q)));
 
-      // Ordenamiento robusto: numérico + desempate por id (numérico también)
       const byId = (a,b) => (a.id||'').localeCompare(b.id||'', undefined, {numeric:true, sensitivity:'base'});
 
-      if (ord==='priceAsc') {
-        list.sort((a,b)=> (getPrice(a) - getPrice(b)) || byId(a,b));
-      } else if (ord==='priceDesc') {
-        list.sort((a,b)=> (getPrice(b) - getPrice(a)) || byId(a,b));
-      }
+      if (ord==='priceAsc')  list.sort((a,b)=> (getPriceSafe(a) - getPriceSafe(b)) || byId(a,b));
+      if (ord==='priceDesc') list.sort((a,b)=> (getPriceSafe(b) - getPriceSafe(a)) || byId(a,b));
 
       currentFiltered = list;
       productsVisible = Math.min(PRODUCTS_VISIBLE_INIT, list.length);
@@ -516,34 +412,28 @@
       updateMoreProductsVisibility(list.length, productsVisible);
     }
 
-    // ---- Paginado incremental "Ver más / Ver menos"
-    gridMoreBtnMore?.addEventListener('click', () => {
-      productsVisible = Math.min(productsVisible + PRODUCTS_PAGE_SIZE, currentFiltered.length);
+    document.getElementById('gridMoreBtnMore')?.addEventListener('click', () => {
+      productsVisible = Math.min(productsVisible + 4, currentFiltered.length);
       render(currentFiltered.slice(0, productsVisible));
       updateMoreProductsVisibility(currentFiltered.length, productsVisible);
     });
-
-    gridMoreBtnLess?.addEventListener('click', () => {
+    document.getElementById('gridMoreBtnLess')?.addEventListener('click', () => {
       productsVisible = Math.min(PRODUCTS_VISIBLE_INIT, currentFiltered.length);
       render(currentFiltered.slice(0, productsVisible));
       updateMoreProductsVisibility(currentFiltered.length, productsVisible);
       document.getElementById('tienda').scrollIntoView({ behavior:'smooth', block:'start' });
     });
 
-    searchInput.addEventListener('input', applyFilters);
-    tagSelect.addEventListener('change', applyFilters);
-    sortSelect.addEventListener('change', applyFilters);
     function applyMobileFilters(){
-      document.getElementById('tagSelect').value = document.getElementById('tagSelectMobile').value;
-      document.getElementById('searchInput').value = document.getElementById('searchInputMobile').value;
+      document.getElementById('tagSelect').value    = document.getElementById('tagSelectMobile').value;
+      document.getElementById('searchInput').value  = document.getElementById('searchInputMobile').value;
       applyFilters();
     }
 
-    // ---------- Carrito mínimo ----------
+    // Carrito simple
     const CART_KEY = 'espaciales_cart';
-    const cartCountEl = document.getElementById('cartCount');
-    const cartCountElMobile = document.getElementById('cartCountMobile'); // (ya no existe, pero no molesta)
-    const cartCountElMobileNav = document.getElementById('cartCountMobileNav'); // botón fijo móvil
+    const cartCountEl           = document.getElementById('cartCount');
+    const cartCountElMobileNav  = document.getElementById('cartCountMobileNav');
     const toastAdd  = new bootstrap.Toast(document.getElementById('cartToast'), { delay: 1400 });
     const toastSize = new bootstrap.Toast(document.getElementById('sizeToast'), { delay: 1400 });
     const getCart = () => { try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch { return []; } };
@@ -551,118 +441,55 @@
     const updateCartCount = () => {
       const total = getCart().reduce((acc, it)=>acc+it.qty, 0);
       if (cartCountEl) cartCountEl.textContent = total;
-      if (cartCountElMobile) cartCountElMobile.textContent = total;
       if (cartCountElMobileNav) cartCountElMobileNav.textContent = total;
     };
-
     function addToCart(id){
       const product = PRODUCTS.find(p=>p.id===id); if(!product) return;
       const size = selectedSizes.get(id);
       if(!size){ toastSize.show(); return; }
-
-      // Detectar la imagen mostrada (con fallback aplicado)
-      const card = document.querySelector(`article[data-pid="${id}"]`);
-      let imgSrc = '';
-      if (card) {
-        const imgEl = card.querySelector('img.card-img-top');
-        if (imgEl) imgSrc = imgEl.currentSrc || imgEl.src || '';
-      }
-      if (!imgSrc) imgSrc = product.src;
-
       const key = id + '::' + size;
       const cart = getCart();
       const idx = cart.findIndex(it=> (it.key===key));
       if(idx>-1) cart[idx].qty += 1;
-      else cart.push({
-        key, id, name: product.name, price: getPrice(product), size, qty: 1,
-        img: imgSrc, imgFull: imgSrc
-      });
+      else cart.push({ key, id, name: product.name, price: getPrice(product), size, qty: 1, img: product.src, imgFull: product.src });
       setCart(cart); toastAdd.show();
     }
 
-    /* ---------- Noticias (mismo folder) + sidecar robusto (.url/.webloc/.txt) ---------- */
-    const NEWS_BASE = ''; // mismo directorio que este HTML
-    const NEWS_MAX_INDEX = 60;
-    const NEWS_EXTS = ['webp','jpg','jpeg','png'];
-    const SIDECAR_EXTS = ['.url','.URL','.txt','.TXT','.link','.LINK','.webloc','.WEBLOC'];
+    // ==========================================================
+    //                  NOTICIAS (mismo folder soportado)
+    // ==========================================================
+    const NEWS_DIRS = ['', 'noticias/']; // '' = misma carpeta que el HTML
+    const NEWS_MAX_INDEX = 100;
+    const NEWS_EXTS = ['webp','jpg','jpeg','png','JPG','PNG','WEBP','JPEG'];
+    const NEWS_STATIC_FILES = []; // ej: ['post1.jpg','post2.png'] si querés forzarlas
 
-    function parseSidecarContent(text){
-      if(!text) return '';
-      const raw = text.replace(/\r/g,'').trim();
-
-      // Windows .url (INI)
-      if (/\[InternetShortcut\]/i.test(raw)) {
-        const m = raw.match(/^URL=(.+)$/im);
-        if (m) return m[1].trim();
-      }
-      // macOS .webloc (plist)
-      if (/^\s*<\?xml/i.test(raw) || /<plist/i.test(raw)) {
-        const m = raw.match(/<string>\s*(https?:\/\/[^<\s]+)\s*<\/string>/i);
-        if (m) return m[1].trim();
-      }
-      // Texto plano: primera línea no vacía
-      const line = raw.split('\n').map(s=>s.trim()).find(Boolean) || '';
-      return line;
-    }
-
-    function normalizeInstagramUrl(raw){
-      if(!raw) return '';
-      let s = String(raw).trim();
-
-      if (/^https:\/\/l\.instagram\.com\//i.test(s)) {
-        try {
-          const u = new URL(s);
-          const inner = u.searchParams.get('u');
-          if (inner) s = decodeURIComponent(inner);
-        } catch {}
-      }
-
-      const mStory = s.match(/^story:([\w\.\-]+):(\d+)$/i);
-      if (mStory) return `https://www.instagram.com/stories/${mStory[1]}/${mStory[2]}/`;
-
-      const mHighlight = s.match(/^highlight:(\d+)$/i);
-      if (mHighlight) return `https://www.instagram.com/stories/highlights/${mHighlight[1]}/`;
-
-      const mShort = s.match(/^(p|reel|tv):\s*([A-Za-z0-9_-]+)$/i);
-      if (mShort) return `https://www.instagram.com/${mShort[1].toLowerCase()}/${mShort[2]}/`;
-
-      return s;
-    }
-
-    async function fetchSidecarLink(src){
-      const base = src.replace(/\.(webp|jpe?g|png)$/i,'');
-      for(const ext of SIDECAR_EXTS){
-        try{
-          const sidecarPath = encodeURI(base + ext);
-          const r = await fetch(sidecarPath + '?v=' + Date.now());
-          if(r.ok){
-            const txt = await r.text();
-            const extracted = parseSidecarContent(txt);
-            const url = normalizeInstagramUrl(extracted);
-            if(/^https?:\/\//i.test(url)) return url;
-          }
-        }catch(e){
-          // Algunos navegadores bloquean fetch en file://; seguimos probando.
-        }
-      }
-      return null;
-    }
+    const NEWS_BASES = (n) => {
+      const pad = String(n).padStart(2,'0');
+      return [
+        `news-${n}`, `news-${pad}`, `news (${n})`, `news (${pad})`,
+        `noticia-${n}`, `noticia (${n})`,
+        `noticias-${n}`, `noticias (${n})`
+      ];
+    };
 
     async function discoverNews(){
-      const items=[];
-      for(let n=NEWS_MAX_INDEX; n>=1; n--){
-        const candidates=[];
-        for(const ext of NEWS_EXTS){
-          candidates.push(`${NEWS_BASE}news-${n}.${ext}`);
-          candidates.push(`${NEWS_BASE}news (${n}).${ext}`);
+      const items = [];
+      for (let n = NEWS_MAX_INDEX; n >= 1; n--){
+        let srcFound = null;
+        outer:
+        for (const dir of NEWS_DIRS){
+          for (const base of NEWS_BASES(n)){
+            for (const ext of NEWS_EXTS){
+              const cand = `${dir}${base}.${ext}`;
+              const ok = await tryLoad(cand);
+              if (ok){ srcFound = ok; break outer; }
+            }
+          }
         }
-        // eslint-disable-next-line no-await-in-loop
-        const src = await checkFirstExisting(candidates);
-        if(src){
-          // eslint-disable-next-line no-await-in-loop
-          const href = await fetchSidecarLink(src) || 'https://instagram.com/e.spaciales';
-          items.push({ n, src, href, hasLink: !!href && href!=='https://instagram.com/e.spaciales' });
-        }
+        if (srcFound) items.push({ n, src: srcFound });
+      }
+      if (items.length === 0 && NEWS_STATIC_FILES.length){
+        NEWS_STATIC_FILES.forEach((src, i) => items.push({ n: i+1, src }));
       }
       return items;
     }
@@ -671,105 +498,155 @@
       const grid = document.getElementById('newsGrid');
       if(!grid) return;
       grid.innerHTML = '';
-
       if(items.length===0){
-        grid.innerHTML = `
-          <p class="text-secondary">
-            Colocá imágenes <strong>en este mismo directorio</strong> como <strong>news-5.jpg</strong> o <strong>news (5).jpg</strong>
-            y al lado un <strong>news (5).url</strong> / <strong>.webloc</strong> / <strong>.txt</strong> con el link.
-          </p>`;
+        grid.innerHTML = `<p class="text-secondary">Poné imágenes (mismo folder o /noticias) con nombres tipo <strong>news-5.jpg</strong> o <strong>news (5).png</strong>, o listalas en <code>NEWS_STATIC_FILES</code>.</p>`;
         return;
       }
-
-      const anyMissing = items.some(it => !it.hasLink);
-      if (anyMissing && location.protocol === 'file:') {
-        const warn = document.createElement('div');
-        warn.className = 'alert alert-warning text-dark';
-        warn.innerHTML = 'Estás viendo el archivo como <code>file://</code>. Algunos navegadores bloquean <code>fetch</code> para leer los .url/.webloc. Probá abrir con un servidor local (VSCode Live Server, Vite, etc.).';
-        grid.parentElement.insertBefore(warn, grid);
-      }
-
-      items.forEach(({n, src, href})=>{
+      items.forEach(({n, src})=>{
         const col = document.createElement('div');
         col.className = 'col-12 col-md-6 col-lg-4';
         col.innerHTML = `
           <article class="news-card h-100 d-flex flex-column position-relative">
-            <a href="${href}" target="_blank" rel="noopener" class="stretched-link" aria-label="Abrir noticia #${n}"></a>
             <img src="${src}" alt="Noticia ${n} de @e.spaciales" class="news-media" loading="lazy" decoding="async">
             <div class="p-3 d-flex flex-column gap-2">
               <div class="d-flex justify-content-between align-items-center">
                 <span class="badge ig-badge">Instagram</span>
                 <span class="news-meta">#${n}</span>
               </div>
-              <h3 class="news-title h5 m-0">Ver en Instagram</h3>
-              <small class="text-secondary">Tocá para abrir →</small>
+              <h3 class="news-title h5 m-0">Publicación</h3>
+              <small class="text-secondary">Galería de noticias</small>
             </div>
           </article>`;
         grid.appendChild(col);
       });
     }
 
-    // ---------- Galería dinámica + "Ver más / Ver menos" ----------
-    const GAL_BASE  = '';   // mismo directorio
-    const GAL_COUNT = 9;
-    const GALLERY_VISIBLE_INIT = 4;
-    let galleryVisible = GALLERY_VISIBLE_INIT;
+    // ==========================================================
+    //                  GALERÍA (mismo folder soportado)
+    // ==========================================================
+    const GAL_DIRS  = ['', 'galeria/','Galeria/','GALERIA/']; // '' = misma carpeta
+    const GAL_EXTS  = ['webp','jpg','jpeg','png','JPG','PNG','WEBP','JPEG'];
+    const GAL_COUNT = 60;
+    const GALLERY_STATIC_FILES = []; // ej: ['foto1.jpg','foto2.png'] si querés forzarlas
+    let GALLERY_SRCS = [];
+    let galleryVisible = 999; // mostrar TODO de entrada
 
-    const galeriaGrid      = document.getElementById('galeriaGrid');
-    const galeriaMoreWrap  = document.getElementById('galeriaMoreWrap');
-    const galeriaMoreBtnMore = document.getElementById('galeriaMoreBtnMore');
-    const galeriaMoreBtnLess = document.getElementById('galeriaMoreBtnLess');
+    const GAL_BASES = (i) => {
+      const pad = String(i).padStart(2,'0');
+      return [
+        `nuevas (${i})`, `nuevas (${pad})`,
+        `nueva (${i})`,  `nueva (${pad})`,
+        `galeria (${i})`, `galeria-${i}`, `galeria-${pad}`,
+        `gallery (${i})`, `gallery (${pad})`, `gallery-${i}`, `gallery-${pad}`,
+        `gal (${i})`, `gal-${i}`, `img-galeria-${i}`
+      ];
+    };
+
+    async function prepareGallerySources(){
+      const out = [];
+      for (let i = 1; i <= GAL_COUNT; i++){
+        let src = null;
+        outer:
+        for (const dir of GAL_DIRS){
+          for (const base of GAL_BASES(i)){
+            for (const ext of GAL_EXTS){
+              const cand = `${dir}${base}.${ext}`;
+              const ok = await tryLoad(cand);
+              if (ok){ src = ok; break outer; }
+            }
+          }
+        }
+        if (src) out.push(src);
+      }
+      if (out.length === 0 && GALLERY_STATIC_FILES.length) return [...GALLERY_STATIC_FILES];
+      return out;
+    }
 
     function buildGallery(visible){
+      const galeriaGrid = document.getElementById('galeriaGrid');
+      const galeriaMoreWrap = document.getElementById('galeriaMoreWrap');
+      const galeriaMoreBtnMore = document.getElementById('galeriaMoreBtnMore');
+      const galeriaMoreBtnLess = document.getElementById('galeriaMoreBtnLess');
+
       galeriaGrid.innerHTML = '';
-      const max = Math.min(visible, GAL_COUNT);
-      for (let i = 1; i <= max; i++) {
+      const total = GALLERY_SRCS.length;
+      if (!total){
+        galeriaGrid.innerHTML = '<p class="text-secondary">Agregá imágenes en el mismo folder (o /galeria) con nombres tipo <code>nuevas (1).jpg</code>, <code>galeria-1.png</code>, o listalas en <code>GALLERY_STATIC_FILES</code>.</p>';
+        galeriaMoreWrap.style.display = 'none';
+        return;
+      }
+      const max = Math.min(visible, total);
+      for (let i = 0; i < max; i++) {
+        const src = GALLERY_SRCS[i];
         const col = document.createElement('div');
         col.className = 'col-6 col-md-3';
         col.innerHTML = `
           <div class="gallery-frame">
-            <img class="gallery-img" src="${GAL_BASE}nuevas (${i}).jpg" alt="Galería Espaciales ${i}" loading="lazy" decoding="async" onerror="this.closest('.col-6, .col-md-3').style.display='none'">
+            <img class="gallery-img" src="${src}" alt="Galería Espaciales ${i+1}" loading="lazy" decoding="async">
           </div>`;
         galeriaGrid.appendChild(col);
       }
-      const canExpand = GAL_COUNT > GALLERY_VISIBLE_INIT;
-      galeriaMoreWrap.style.display = canExpand ? 'block' : 'none';
-      galeriaMoreBtnMore.style.display = (max < GAL_COUNT) ? 'inline-block' : 'none';
-      galeriaMoreBtnLess.style.display = (max > GALLERY_VISIBLE_INIT) ? 'inline-block' : 'none';
-      galeriaMoreBtnMore.setAttribute('aria-expanded', String(max < GAL_COUNT));
-      galeriaMoreBtnLess.setAttribute('aria-expanded', String(max > GALLERY_VISIBLE_INIT));
+      // Botones: arrancamos mostrando TODO; permitimos "ver menos" si hay más de 4
+      const showControls = total > 4;
+      galeriaMoreWrap.style.display = showControls ? 'block' : 'none';
+      galeriaMoreBtnMore.style.display = (max < total) ? 'inline-block' : 'none';
+      galeriaMoreBtnLess.style.display = showControls ? 'inline-block' : 'none';
+
+      galeriaMoreBtnMore.onclick = () => { galleryVisible = GALLERY_SRCS.length; buildGallery(galleryVisible); };
+      galeriaMoreBtnLess.onclick = () => {
+        galleryVisible = 4; buildGallery(galleryVisible);
+        document.getElementById('galeria').scrollIntoView({ behavior:'smooth', block:'start' });
+      };
     }
-    galeriaMoreBtnMore.addEventListener('click', () => { galleryVisible = GAL_COUNT; buildGallery(galleryVisible); });
-    galeriaMoreBtnLess.addEventListener('click', () => {
-      galleryVisible = Math.min(GALLERY_VISIBLE_INIT, GAL_COUNT);
-      buildGallery(galleryVisible);
-      document.getElementById('galeria').scrollIntoView({ behavior:'smooth', block:'start' });
-    });
+
+    // ==========================================================
+    //                 DESCUBRIMIENTO EN PARALELO (Tienda)
+    // ==========================================================
+    async function discoverProductsParallel(){
+      const tasks = Array.from({length: PROD_MAX_INDEX}, (_,i)=> i+1);
+      const found = [];
+      let idx = 0;
+      function next(){ const n = tasks[idx++]; return n===undefined ? null : n; }
+      async function worker(){
+        for(;;){
+          const n = next(); if (n===null) break;
+          const src = await checkFirstExistingForNumber(n);
+          if (src){ found.push({ n, src }); if (found.length % 3 === 0) updateProducts(found); }
+        }
+      }
+      const workers = Array.from({length: 8}, ()=>worker());
+      await Promise.all(workers);
+      return found;
+    }
+
+    function updateProducts(discovered){
+      PRODUCTS = discovered
+        .sort((a,b)=> a.n - b.n)
+        .map(({n, src}) => ({
+          id: 'r' + n,
+          name: 'Remera ' + n,
+          price: POPULAR_MODELS.has(n) ? OVERRIDE_PRICE : STANDARD_PRICE,
+          tag: POPULAR_MODELS.has(n) ? 'Popular' : 'Nuevo',
+          src
+        }));
+      applyFilters();
+    }
 
     // ---------- Init ----------
     (async () => {
-      // Cargar productos dinámicamente desde "modelos (N).ext"
-      const discovered = await discoverProducts();
-      PRODUCTS = discovered.map(({n, base, src}) => {
-        const isPopular = POPULAR_MODELS.has(n);
-        return {
-          id: 'r' + n,
-          name: 'Remera ' + n,
-          price: isPopular ? OVERRIDE_PRICE : STANDARD_PRICE,
-          tag: isPopular ? 'Popular' : 'Nuevo',
-          fileBase: base, // para fallback
-          src
-        };
-      });
+      renderSkeleton(8);
 
-      applyFilters();
+      // Tienda
+      const discovered = await discoverProductsParallel();
+      updateProducts(discovered);
       updateCartCount();
 
-      // Noticias e Instagram
+      // Noticias: mostrar todas
       const items = await discoverNews();
       buildNewsCards(items);
 
-      // Galería
+      // Galería: mostrar TODO al inicio
+      GALLERY_SRCS = await prepareGallerySources();
       buildGallery(galleryVisible);
     })();
 
@@ -778,7 +655,6 @@
     window.addToCart = addToCart;
     window.collapseNav = collapseNav;
     window.setActive = setActive;
-    window.imgFallbackFromBase = imgFallbackFromBase;
   </script>
 </body>
 </html>

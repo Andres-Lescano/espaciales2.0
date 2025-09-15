@@ -1,0 +1,95 @@
+
+    :root{
+      --bg:#000; --fg:#fff; --accent:#C7F9CC; --muted:#9aa0a6; --radius:12px;
+      --media-max: 480px; --media-max-sm: 360px; --media-radius: 16px;
+    }
+    html{ scroll-behavior:smooth; scroll-padding-top:78px; }
+    body{background:var(--bg); color:var(--fg);}
+    .navbar{background:#000;}
+    .navbar .nav-link, .navbar .navbar-brand{color:var(--fg);}
+    .navbar .nav-link.active{color:var(--accent)!important;}
+    .shipping-bar{background:var(--accent); color:#0a0a0a; font-weight:800; letter-spacing:.5px;}
+
+    /* Botón carrito móvil compacto */
+    .btn-cart-mobile{ padding:.35rem .6rem; display:inline-flex; align-items:center; gap:.35rem; font-weight:600; }
+    #cartCountMobileNav{ min-width:1.25rem; line-height:1.1rem; }
+
+    /* ===== HERO ===== */
+    .hero{ --hero-h:56vh; height:var(--hero-h); display:grid; place-items:end start; padding:3rem 0; position:relative; overflow:hidden; background:#000; }
+    .hero-inner{position:relative; z-index:2}
+    .hero h1{font-weight:900; letter-spacing:.5px; text-shadow:0 0 12px rgba(0,0,0,.35);}
+    .hero .claim{color:var(--accent); font-size:1.35rem; text-shadow:0 0 10px rgba(0,0,0,.35);}
+    .hero-bg{ position:absolute; inset:0; z-index:0; height:100%; background:#000; }
+    .hero-bg .carousel-inner, .hero-bg .carousel-item{ height:100%; }
+    .hero-bg .carousel-item img{ width:100%; height:100%; object-fit:cover; object-position:center; display:block; }
+
+    @media (max-width:576px){
+      .hero{ height:auto; display:block; padding:0 0 1rem 0; }
+      .hero-bg{ position:relative; height:310px; overflow:hidden; background:#000; }
+      .hero .claim{ font-size:1.05rem; }
+      .hero h1{ font-size:2rem; }
+      .hero-inner{ position:static; z-index:auto; padding:1rem 1rem 0; text-align:center; }
+      .hero-bg .carousel-item img{ transform:scale(1.22); transform-origin:center; }
+    }
+
+    /* ===== Cards de tienda ===== */
+    .filter-btn{border:1px solid #2b2b2b; color:var(--fg);}
+    .badge-new{background:var(--accent); color:#0a0a0a; font-weight:700}
+    .badge-pop{background:#222; color:#ddd; border:1px solid #2a2a2a}
+    .card{ background:#0f0f0f; border:1px solid #1c1c1c; border-radius:var(--radius); overflow:hidden; transition:transform .2s, box-shadow .2s; content-visibility:auto; contain-intrinsic-size:400px 520px; }
+    .card:hover{transform:translateY(-4px); box-shadow:0 18px 40px rgba(0,0,0,.45);}
+    .card-img-top{aspect-ratio:4/5; object-fit:cover; background:#000;}
+    .product-title{ font-weight:800; font-size:1.1rem; letter-spacing:.2px; color:#fff; }
+    .price{ font-weight:900; letter-spacing:.3px; font-size:1.25rem; color:var(--accent); }
+
+    /* Chips de talle + botón agregar (más chicos en móvil) */
+    .sizes{ display:flex; flex-wrap:wrap; gap:.5rem; }
+    .size-chip{ border:1px solid #2b2b2b; border-radius:999px; padding:.2rem .7rem; font-size:.9rem; line-height:1.2; cursor:pointer; user-select:none; background:#0b0b0b; color:#fff; transition:transform .05s ease, box-shadow .1s ease, border-color .1s ease; }
+    .size-chip:active{ transform:scale(0.98); }
+    .size-chip.selected{ background:var(--accent); color:#0a0a0a; border-color:var(--accent); box-shadow:0 0 0 3px rgba(199,249,204,.2); }
+    .btn-accent{background:var(--accent); color:#0a0a0a; border:none;}
+    .btn-accent:hover{filter:brightness(.95);}
+    @media (max-width:576px){
+      .size-chip{ padding:.15rem .55rem; font-size:.8rem; }
+      .card .btn-accent{ padding:.45rem .7rem; font-size:.85rem; }
+    }
+
+    .search-input{background:#0b0b0b; border:1px solid #242424; color:#fff;}
+    footer a{color:var(--accent); text-decoration:none;}
+
+    /* ===== Botones Ver más / Ver menos ===== */
+    .more-wrap{ display:block !important; visibility:visible !important; opacity:1 !important; }
+    .more-actions{ display:inline-flex; gap:.75rem; }
+    .more-btn{ background:var(--accent); color:#0a0a0a; border:none; font-weight:800; padding:.6rem 1.2rem; border-radius:999px; box-shadow:0 10px 24px rgba(199,249,204,.35); letter-spacing:.2px; }
+    .more-btn:hover{ filter:brightness(.95); transform:translateY(-1px); }
+
+    /* ===== Galería sin recortes ===== */
+    .gallery-frame{ aspect-ratio: 4 / 5; background:#0b0b0b; border:1px solid #1c1c1c; border-radius:14px; display:grid; place-items:center; overflow:hidden; }
+    .gallery-img{ width:100%; height:100%; object-fit:contain; }
+
+    /* ===== Sobre mí ===== */
+    .about-img{ border-radius:18px; }
+    .about-hr{ max-width:90%; margin:4rem auto; border-color:#2a2a2a; opacity:.6; }
+    #sobre-mi .text-secondary{ color:#d6d6d6 !important; }
+
+    /* ===== Media (imagen + video) ===== */
+    #media .media-box{ max-width: var(--media-max); width:100%; }
+    #media img, #media video{ border-radius: var(--media-radius); }
+    @media (max-width:576px){ #media .media-box{ max-width: var(--media-max-sm); } }
+
+    /* ===== Noticias ===== */
+    #noticias .news-card{ background:#0f0f0f; border:1px solid #1c1c1c; border-radius:16px; overflow:hidden; height:100%; }
+    #noticias .news-media{ aspect-ratio: 16/9; width:100%; object-fit:cover; display:block; background:#0b0b0b; }
+    #noticias .news-title{ font-weight:800; letter-spacing:.2px; }
+    #noticias .news-meta{ color:#b9b9b9; font-size:.9rem; }
+    #noticias .ig-badge{ background:var(--accent); color:#0a0a0a; font-weight:800; }
+
+    /* ===== Skeleton para productos ===== */
+    .skeleton{ background:#121212; border:1px solid #1c1c1c; border-radius:var(--radius); overflow:hidden; }
+    .skeleton .ph{ height: 220px; background: linear-gradient(90deg,#111 25%,#1a1a1a 37%,#111 63%); background-size:400% 100%; animation:pulse 1.2s ease-in-out infinite; }
+    .skeleton .line{ height:14px; margin:10px 16px; border-radius:8px; background: linear-gradient(90deg,#111 25%,#1a1a1a 37%,#111 63%); background-size:400% 100%; animation:pulse 1.2s ease-in-out infinite; }
+    @keyframes pulse{ 0%{background-position:100% 0} 100%{background-position:-100% 0} }
+
+    /* Aseguramos visibilidad inmediata de Noticias/Galería */
+    #newsGrid img.news-media, #galeriaGrid img.gallery-img{ display:block !important; visibility:visible !important; opacity:1 !important; }
+    /* Importante: sin reglas que oculten #galeriaGrid por defecto */
