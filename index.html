@@ -248,14 +248,22 @@
     const PRODUCT_MIN = 1, PRODUCT_MAX = 65;
     const GALLERY_MIN = 1, GALLERY_MAX = 8;
 
-    // Aceptar varios formatos (también en mayúscula por servidores case-sensitive)
+    // Formats aceptados
     const EXTS = ['webp','jpg','jpeg','png','WEBP','JPG','JPEG','PNG'];
 
-    // Etiquetas simples (opcional): marcá como "Nuevo" los últimos modelos
+    // Etiquetas simples
     const NEW_MODELS = new Set([57,58,59,60,61,62,63,64,65]);
     const money = n => new Intl.NumberFormat('es-AR',{ style:'currency',currency:'ARS',maximumFractionDigits:0 }).format(n);
 
-    // ---- Chequeo de existencia de imagen sin cache-busting ----
+    // ======= Bandera de expansión persistente en la sesión =======
+    const EXPANDED_KEY = 'espaciales_grid_expanded';
+    const isExpanded = ()=> sessionStorage.getItem(EXPANDED_KEY)==='1';
+    const setExpanded = (v)=> sessionStorage.setItem(EXPANDED_KEY, v?'1':'0');
+    // Al salir/recargar, se limpia
+    addEventListener('beforeunload', ()=> sessionStorage.removeItem(EXPANDED_KEY), {capture:true});
+    addEventListener('pagehide', ()=> sessionStorage.removeItem(EXPANDED_KEY), {capture:true});
+
+    // ---- Chequeo de existencia de imagen ----
     function tryLoad(src){
       return new Promise(resolve=>{
         const img = new Image();
@@ -267,8 +275,7 @@
         img.src = src;
       });
     }
-
-    async function findExisting(base){ // base: "modelos (n)" o "nueva (i)"
+    async function findExisting(base){
       for(const ext of EXTS){
         const url = `${base}.${ext}`;
         const ok = await tryLoad(url);
@@ -278,7 +285,7 @@
     }
 
     // ---------------- Estado / render ----------------
-    let PRODUCTS = [];     // {id,name,price,tag,src}
+    let PRODUCTS = [];
     let currentFiltered = [];
     const selectedSizes = new Map();
 
@@ -306,7 +313,6 @@
           </div>
         </article>`;
     }
-
     function sizeChip(id, size){ return `<button type="button" class="size-chip" data-id="${id}" data-size="${size}" aria-pressed="false">${size}</button>`; }
     function markSelected(btn){ btn.classList.add('selected'); btn.setAttribute('aria-pressed','true'); }
     grid.addEventListener('click', (ev)=>{
@@ -328,7 +334,6 @@
         frag.appendChild(col);
       }
       grid.appendChild(frag);
-      // Restaurar selección previa
       for(const [id, size] of selectedSizes){
         const btn = grid.querySelector(`.size-chip[data-id="${id}"][data-size="${size}"]`);
         if(btn) markSelected(btn);
@@ -337,12 +342,15 @@
     }
 
     function updateMoreProductsVisibility(total){
+      const expanded = isExpanded();
       const canExpand = total > PRODUCTS_VISIBLE_INIT;
-      gridMoreWrap.style.display = canExpand ? 'block' : 'none';
-      gridMoreBtnMore.style.display = (productsVisible < total) ? 'inline-block' : 'none';
-      gridMoreBtnLess.style.display = (productsVisible > PRODUCTS_VISIBLE_INIT) ? 'inline-block' : 'none';
-      gridMoreBtnMore.setAttribute('aria-expanded', String(productsVisible < total));
-      gridMoreBtnLess.setAttribute('aria-expanded', String(productsVisible > PRODUCTS_VISIBLE_INIT));
+
+      // Si ya está expandido, ocultamos controles
+      gridMoreWrap.style.display = expanded ? 'none' : (canExpand ? 'block' : 'none');
+      gridMoreBtnMore.style.display = (!expanded && (productsVisible < total)) ? 'inline-block' : 'none';
+      gridMoreBtnLess.style.display = 'none'; // no se usa en este flujo
+      gridMoreBtnMore.setAttribute('aria-expanded', String(!expanded && (productsVisible < total)));
+      gridMoreBtnLess.setAttribute('aria-expanded', 'false');
     }
 
     // Filtros
@@ -367,13 +375,13 @@
       currentFiltered = list;
 
       clearGrid();
-      const initial = Math.min(PRODUCTS_VISIBLE_INIT, list.length);
-      if (initial === 0){
+      const desired = isExpanded() ? list.length : Math.min(PRODUCTS_VISIBLE_INIT, list.length);
+      if (desired === 0){
         grid.innerHTML = '<p class="text-center text-secondary">Cargando diseños…</p>';
         updateMoreProductsVisibility(0);
         return;
       }
-      appendRange(list, 0, initial);
+      appendRange(list, 0, desired);
       updateMoreProductsVisibility(list.length);
     }
 
@@ -384,29 +392,23 @@
     tagSelect.addEventListener('change', applyFilters);
     sortSelect.addEventListener('change', applyFilters);
 
-    // Botones Ver más / Ver menos (incremental sin re-render completo)
+    // ====== "Ver más": expande y queda así durante la sesión ======
     const stopAndNoNav = (ev) => { if(!ev) return; ev.preventDefault(); ev.stopPropagation(); ev.stopImmediatePropagation?.(); };
     gridMoreBtnMore?.addEventListener('click', (ev) => {
       stopAndNoNav(ev);
+      if (isExpanded()) return;
       const y = window.scrollY;
+      setExpanded(true);
       const total = currentFiltered.length;
-      const nextEnd = Math.min(productsVisible + 8, total);
-      if (nextEnd > productsVisible){
-        appendRange(currentFiltered, productsVisible, nextEnd);
-        updateMoreProductsVisibility(total);
+      if (productsVisible < total){
+        appendRange(currentFiltered, productsVisible, total); // agrega el resto
       }
+      updateMoreProductsVisibility(total);
       window.scrollTo(0, y);
     });
     gridMoreBtnLess?.addEventListener('click', (ev) => {
       stopAndNoNav(ev);
-      const y = window.scrollY;
-      clearGrid();
-      const total = currentFiltered.length;
-      const initial = Math.min(PRODUCTS_VISIBLE_INIT, total);
-      if (initial > 0) appendRange(currentFiltered, 0, initial);
-      updateMoreProductsVisibility(total);
-      window.scrollTo(0, y);
-      document.getElementById('tienda').scrollIntoView({ behavior:'smooth', block:'start' });
+      // Intencionalmente sin acción: no se vuelve a ocultar en esta sesión.
     });
 
     // -------- Carrito (simple) --------
@@ -434,28 +436,24 @@
       setCart(cart); toastAdd.show();
     }
 
-    // -------- Descubrimiento estático (modelos (1..65) y nueva (1..8)) --------
+    // -------- Datos estáticos (modelos 1..65 / nueva 1..8) --------
     function computeTag(n){ return NEW_MODELS.has(n) ? 'Nuevo' : 'Popular'; }
 
     async function loadProductsStatic(){
-      // Primero intentamos armar un primer batch rápido (1..16) para mostrar algo YA
       const firstBatchEnd = Math.min(16, PRODUCT_MAX);
       for (let n = PRODUCT_MIN; n <= PRODUCT_MAX; n++){
         const base = `modelos (${n})`;
         const src = await findExisting(base);
         if (src){
           PRODUCTS.push({ id:'r'+n, name:`Remera ${n}`, price: priceFor(n), tag: computeTag(n), src });
-          if (n <= firstBatchEnd) scheduleApplyFilters(); // refresca rápido sin bloquear
+          if (!isExpanded() && n <= firstBatchEnd) scheduleApplyFilters();
         }
-        // Ceder cada 6 ítems para no trabar el hilo
         if (n % 6 === 0) await new Promise(r=>requestAnimationFrame(r));
       }
-      // Ordenar por número (id)
       PRODUCTS.sort((a,b)=> Number(a.id.slice(1)) - Number(b.id.slice(1)));
       applyFilters();
     }
 
-    // -------- Galería estática (nueva (1..8)) --------
     let GALLERY_SRCS = [];
     let galleryVisible = 4;
 
@@ -514,12 +512,11 @@
     // ---------- Init ----------
     (async () => {
       updateCartCount();
-      // Cargar “estático” con nombres fijos
-      loadProductsStatic();  // no await, así arranca YA y va llenando
-      loadGalleryStatic();   // idem
+      loadProductsStatic();
+      loadGalleryStatic();
     })();
 
-    // Exponer helpers al scope global (usados en HTML)
+    // Exponer helpers
     function applyMobileFilters(){
       document.getElementById('tagSelect').value    = document.getElementById('tagSelectMobile').value;
       document.getElementById('searchInput').value  = document.getElementById('searchInputMobile').value;
