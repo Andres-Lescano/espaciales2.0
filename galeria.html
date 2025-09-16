@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="es" id="inicio">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Galería | Espaciales</title>
+  <meta name="description" content="Galería Espaciales: ilustraciones y composiciones visuales.">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Tu CSS -->
+  <link rel="stylesheet" href="archivo.css">
+
+  <!-- Masonry full-width con columnas de ancho fijo + 2 col en móvil -->
+  <style>
+    :root{
+      --masonry-col-width: 300px; /* ancho objetivo desktop/tablet */
+      --masonry-gap: 1rem;
+    }
+
+    /* Galería en todo el ancho */
+    #galeria.container-fluid{ padding-left: .75rem; padding-right: .75rem; }
+    @media (min-width:576px){
+      #galeria.container-fluid{ padding-left: 1rem; padding-right: 1rem; }
+    }
+    @media (min-width:992px){
+      #galeria.container-fluid{ padding-left: 1.25rem; padding-right: 1.25rem; }
+    }
+
+    /* Masonry por defecto: column-width controla el tamaño de cada item */
+    .masonry{
+      column-gap: var(--masonry-gap);
+      column-width: var(--masonry-col-width);
+    }
+
+    /* MÓVIL: exactamente 2 columnas (2 imágenes por fila) y gap más chico */
+    @media (max-width:575.98px){
+      .masonry{
+        column-count: 2;     /* ← fuerza 2 columnas */
+        column-width: auto;  /* ignora el ancho objetivo en móvil */
+        column-gap: .75rem;
+      }
+      :root{ --masonry-gap: .75rem; } /* armoniza el espacio vertical */
+    }
+
+    /* Opcional: afinar desktop muy grande */
+    @media (min-width:1400px){
+      :root{ --masonry-col-width: 320px; }
+    }
+
+    .masonry-item{
+      break-inside: avoid;
+      display: block;
+      margin-bottom: var(--masonry-gap);
+    }
+    .masonry-item img{
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+      background: #0b0b0b;
+      content-visibility: auto;
+    }
+
+    /* Navbar del tema (si no está en archivo.css) */
+    .navbar{ background:#000; }
+    .navbar .nav-link, .navbar .navbar-brand{ color:#fff; }
+    .navbar .nav-link.active{ color:#C7F9CC !important; }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <div class="container align-items-center">
+      <a class="navbar-brand d-flex align-items-center" href="index.html#inicio" title="Volver al inicio">
+        <img src="logo.png" alt="Espaciales Logo" style="height: 40px; max-height: 40px; width: auto;">
+      </a>
+
+      <!-- Móvil: carrito + hamburguesa -->
+      <div class="d-lg-none ms-auto d-flex align-items-center gap-2">
+        <a class="btn btn-outline-light btn-sm position-relative btn-cart-mobile" href="carrito.html" aria-label="Ir al carrito">
+          🛒 Carrito
+          <span id="cartCountMobileNav" class="badge rounded-pill bg-danger position-absolute" style="top:-6px; right:-6px;">0</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#navMobile" aria-controls="navMobile" aria-label="Abrir menú">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      </div>
+
+      <!-- Desktop -->
+      <div class="d-none d-lg-flex align-items-center ms-auto">
+        <ul class="navbar-nav me-3">
+          <li class="nav-item"><a class="nav-link" href="index.html#inicio">INICIO</a></li>
+          <li class="nav-item"><a class="nav-link" href="index.html#tienda">TIENDA</a></li>
+          <li class="nav-item"><a class="nav-link" href="index.html#sobre-mi">SOBRE MÍ</a></li>
+          <li class="nav-item"><a class="nav-link active" href="#galeria">DIBUJOS</a></li>
+        </ul>
+        <a class="btn btn-sm btn-outline-light position-relative" href="carrito.html" aria-label="Ir al carrito">
+          🛒 Carrito
+          <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+        </a>
+      </div>
+
+      <!-- Offcanvas móvil -->
+      <div class="offcanvas offcanvas-end text-bg-dark d-lg-none" tabindex="-1" id="navMobile" aria-labelledby="navMobileLabel">
+        <div class="offcanvas-header">
+          <h5 id="navMobileLabel" class="offcanvas-title">Menú</h5>
+          <button class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+        </div>
+        <div class="offcanvas-body">
+          <ul class="navbar-nav text-end">
+            <li class="nav-item"><a class="nav-link" href="index.html#inicio">INICIO</a></li>
+            <li class="nav-item"><a class="nav-link" href="index.html#tienda">TIENDA</a></li>
+            <li class="nav-item"><a class="nav-link" href="index.html#sobre-mi">SOBRE MÍ</a></li>
+            <li class="nav-item"><a class="nav-link active" href="#galeria" data-bs-dismiss="offcanvas">DIBUJOS</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <header class="container py-4">
+    <h1 class="display-6 text-center">Galería</h1>
+  </header>
+
+  <!-- Galería a ancho completo -->
+  <main id="galeria" class="container-fluid pb-5">
+    <div id="loadingMsg" class="text-center text-secondary my-4">Cargando imágenes…</div>
+    <div id="masonry" class="masonry"></div>
+    <p id="emptyMsg" class="text-center text-secondary my-4" style="display:none">
+      No se encontraron archivos <code>dibujo (1..N)</code> en WEBP/JPG/JPEG/PNG dentro de esta carpeta.
+    </p>
+  </main>
+
+  <footer class="container py-4 border-top border-secondary">
+    <div class="d-flex flex-column flex-sm-row justify-content-between gap-2">
+      <small>© 2025 Valentín — Ropa ilustrada</small>
+      <small><a href="https://instagram.com/e.spaciales" target="_blank" rel="noopener">Instagram @e.spaciales</a> · <a href="mailto:galesiov@gmail.com">galesiov@gmail.com</a></small>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // -------- Helpers navbar: contador simple de carrito --------
+    const CART_KEY = 'espaciales_cart';
+    const getCart = () => { try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch { return []; } };
+    const updateCartCount = () => {
+      const total = getCart().reduce((acc, it)=>acc+it.qty, 0);
+      const c1 = document.getElementById('cartCount');
+      const c2 = document.getElementById('cartCountMobileNav');
+      if (c1) c1.textContent = total;
+      if (c2) c2.textContent = total;
+    };
+
+    // -------- Descubrimiento de imágenes "dibujo (1..N)" con múltiples formatos --------
+    const EXTS = ['webp','jpg','jpeg','png','WEBP','JPG','JPEG','PNG'];
+    const GALLERY_MIN = 1;
+    const GALLERY_MAX = 120;   // ajustá este tope
+
+    function tryLoad(src){
+      return new Promise(resolve=>{
+        const img = new Image();
+        let done=false;
+        const finish = ok => { if(done) return; done=true; resolve(ok ? src : null); };
+        const t = setTimeout(()=>finish(false), 1000);
+        img.onload = ()=>{ clearTimeout(t); finish(true); };
+        img.onerror= ()=>{ clearTimeout(t); finish(false); };
+        img.decoding='async'; img.loading='eager';
+        img.src = src;
+      });
+    }
+    async function findExisting(base){
+      for(const ext of EXTS){
+        const url = `${base}.${ext}`;
+        if (await tryLoad(url)) return url;
+      }
+      return null;
+    }
+
+    async function loadMasonry(){
+      const cont = document.getElementById('masonry');
+      const loading = document.getElementById('loadingMsg');
+      const empty = document.getElementById('emptyMsg');
+
+      let count = 0;
+      for(let n=GALLERY_MIN; n<=GALLERY_MAX; n++){
+        const base = `dibujo (${n})`;
+        const src = await findExisting(base);
+        if (src){
+          const fig = document.createElement('figure');
+          fig.className = 'masonry-item';
+          fig.innerHTML = `<img src="${src}" alt="Dibujo ${n}" loading="lazy" decoding="async">`;
+          cont.appendChild(fig);
+          count++;
+        }
+        if (n % 8 === 0) await new Promise(r=>requestAnimationFrame(r));
+      }
+      loading.style.display = 'none';
+      if (!count) empty.style.display = 'block';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateCartCount();
+      loadMasonry();
+    });
+  </script>
+</body>
+</html>

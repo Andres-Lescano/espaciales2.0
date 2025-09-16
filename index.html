@@ -13,58 +13,68 @@
   <link rel="preload" as="image" href="gato.PNG">
   <link rel="preload" as="image" href="alien.jpg">
   <link rel="preload" as="image" href="valen3.jpg">
-  <link rel="preload" as="video" href="video.MOV" type="video/quicktime">
+  <link rel="preload" as="video" href="video.mp4" type="video/quicktime">
 
   <link rel="stylesheet" href="archivo.css">
 </head>
 <body>
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
-    <div class="container align-items-center">
-      <a class="navbar-brand d-flex align-items-center" href="#" onclick="return reloadHome(event)" title="Recargar inicio">
-        <img src="logo.png" alt="Espaciales Logo" style="height: 40px; max-height: 40px; width: auto;">
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+  <div class="container align-items-center">
+    <a class="navbar-brand d-flex align-items-center" href="#" onclick="return reloadHome(event)" title="Recargar inicio">
+      <img src="logo.png" alt="Espaciales Logo" style="height: 40px; max-height: 40px; width: auto;">
+    </a>
+
+    <!-- Móvil: carrito + hamburguesa -->
+    <div class="d-lg-none ms-auto d-flex align-items-center gap-2">
+      <a class="btn btn-outline-light btn-sm position-relative btn-cart-mobile" href="carrito.html" aria-label="Ir al carrito">
+        🛒 Carrito
+        <span id="cartCountMobileNav" class="badge rounded-pill bg-danger position-absolute" style="top:-6px; right:-6px;">0</span>
       </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#navMobile" aria-controls="navMobile" aria-label="Abrir menú">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </div>
 
-      <!-- Móvil: carrito + hamburguesa -->
-      <div class="d-lg-none ms-auto d-flex align-items-center gap-2">
-        <a class="btn btn-outline-light btn-sm position-relative btn-cart-mobile" href="carrito.html" aria-label="Ir al carrito">
-          🛒 Carrito
-          <span id="cartCountMobileNav" class="badge rounded-pill bg-danger position-absolute" style="top:-6px; right:-6px;">0</span>
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#navMobile" aria-controls="navMobile" aria-label="Abrir menú">
-          <span class="navbar-toggler-icon"></span>
-        </button>
+    <!-- Desktop -->
+    <div class="d-none d-lg-flex align-items-center ms-auto">
+      <ul class="navbar-nav me-3">
+        <li class="nav-item"><a class="nav-link active" href="#inicio" onclick="setActive(this)">INICIO</a></li>
+        <li class="nav-item"><a class="nav-link" href="#tienda" onclick="setActive(this)">TIENDA</a></li>
+        <li class="nav-item"><a class="nav-link" href="#sobre-mi" onclick="setActive(this)">SOBRE MÍ</a></li>
+        <!-- NUEVO: enlace a la página de galería -->
+        <li class="nav-item">
+          <a class="nav-link" href="galeria.html" title="Ver la galería de dibujos">DIBUJOS</a>
+        </li>
+      </ul>
+      <a class="btn btn-sm btn-outline-light position-relative" href="carrito.html" aria-label="Ir al carrito">
+        🛒 Carrito
+        <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+      </a>
+    </div>
+
+    <!-- Offcanvas móvil -->
+    <div class="offcanvas offcanvas-end text-bg-dark d-lg-none" tabindex="-1" id="navMobile" aria-labelledby="navMobileLabel">
+      <div class="offcanvas-header">
+        <h5 id="navMobileLabel" class="offcanvas-title">Menú</h5>
+        <button class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
       </div>
-
-      <!-- Desktop -->
-      <div class="d-none d-lg-flex align-items-center ms-auto">
-        <ul class="navbar-nav me-3">
-          <li class="nav-item"><a class="nav-link active" href="#inicio" onclick="setActive(this)">INICIO</a></li>
-          <li class="nav-item"><a class="nav-link" href="#tienda" onclick="setActive(this)">TIENDA</a></li>
-          <li class="nav-item"><a class="nav-link" href="#sobre-mi" onclick="setActive(this)">SOBRE MÍ</a></li>
+      <div class="offcanvas-body">
+        <ul class="navbar-nav text-end">
+          <li class="nav-item"><a class="nav-link active" href="#inicio" onclick="collapseNav();setActive(this)">INICIO</a></li>
+          <li class="nav-item"><a class="nav-link" href="#tienda" onclick="collapseNav();setActive(this)">TIENDA</a></li>
+          <li class="nav-item"><a class="nav-link" href="#sobre-mi" onclick="collapseNav();setActive(this)">SOBRE MÍ</a></li>
+          <!-- NUEVO: enlace a la página de galería (cierra el offcanvas antes de navegar) -->
+          <li class="nav-item">
+            <a class="nav-link" href="galeria.html" onclick="collapseNav()" title="Ver la galería de dibujos">DIBUJOS</a>
+          </li>
         </ul>
-        <a class="btn btn-sm btn-outline-light position-relative" href="carrito.html" aria-label="Ir al carrito">
-          🛒 Carrito
-          <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
-        </a>
-      </div>
-
-      <!-- Offcanvas móvil -->
-      <div class="offcanvas offcanvas-end text-bg-dark d-lg-none" tabindex="-1" id="navMobile" aria-labelledby="navMobileLabel">
-        <div class="offcanvas-header">
-          <h5 id="navMobileLabel" class="offcanvas-title">Menú</h5>
-          <button class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
-        </div>
-        <div class="offcanvas-body">
-          <ul class="navbar-nav text-end">
-            <li class="nav-item"><a class="nav-link active" href="#inicio" onclick="collapseNav();setActive(this)">INICIO</a></li>
-            <li class="nav-item"><a class="nav-link" href="#tienda" onclick="collapseNav();setActive(this)">TIENDA</a></li>
-            <li class="nav-item"><a class="nav-link" href="#sobre-mi" onclick="collapseNav();setActive(this)">SOBRE MÍ</a></li>
-          </ul>
-        </div>
       </div>
     </div>
-  </nav>
+  </div>
+</nav>
+
 
   <!-- Faja envío -->
   <div class="shipping-bar text-center py-2">ENVÍO GRATIS DESDE 3 REMERAS</div>
@@ -155,8 +165,8 @@
       <div class="col-12 col-md-auto d-flex justify-content-center justify-content-md-start">
         <div class="media-box">
           <video class="w-100 shadow border border-secondary" controls playsinline preload="metadata" style="max-width: 100%; height: auto; width: 100%; max-height: 550px; object-fit: cover;">
-            <source src="video.MOV">
-            Tu navegador no soporta el video. Podés descargarlo desde <a href="video.MOV">acá</a>.
+            <source src="video.mp4" type="video/quicktime">
+            Tu navegador no soporta el video. Podés descargarlo desde <a href="video.mp4">acá</a>.
           </video>
         </div>
       </div>
@@ -245,14 +255,14 @@
     const PRICE_OVERRIDES = new Map([[6,41000],[7,41000],[40,41000],[41,41000],[42,41000],[43,41000],[44,41000],[45,41000]]);
     const priceFor = (n) => PRICE_OVERRIDES.get(n) ?? STANDARD_PRICE;
 
-    const PRODUCT_MIN = 1, PRODUCT_MAX = 65;
+    const PRODUCT_MIN = 1, PRODUCT_MAX = 69; // <-- pedido: hasta 69
     const GALLERY_MIN = 1, GALLERY_MAX = 8;
 
-    // Formats aceptados
-    const EXTS = ['webp','jpg','jpeg','png','WEBP','JPG','JPEG','PNG'];
+    // Orden de extensiones a probar (minúsculas y mayúsculas)
+    const EXT_ORDER = ['webp','jpg','jpeg','png','WEBP','JPG','JPEG','PNG'];
 
     // Etiquetas simples
-    const NEW_MODELS = new Set([57,58,59,60,61,62,63,64,65]);
+    const NEW_MODELS = new Set([57,58,59,60,61,62,63,64,65,66,67,68,69]);
     const money = n => new Intl.NumberFormat('es-AR',{ style:'currency',currency:'ARS',maximumFractionDigits:0 }).format(n);
 
     // ======= Bandera de expansión persistente en la sesión =======
@@ -263,25 +273,29 @@
     addEventListener('beforeunload', ()=> sessionStorage.removeItem(EXPANDED_KEY), {capture:true});
     addEventListener('pagehide', ()=> sessionStorage.removeItem(EXPANDED_KEY), {capture:true});
 
-    // ---- Chequeo de existencia de imagen ----
-    function tryLoad(src){
-      return new Promise(resolve=>{
-        const img = new Image();
-        let done=false; const finish=ok=>{ if(done) return; done=true; resolve(ok?src:null); };
-        const t=setTimeout(()=>finish(false), 1200);
-        img.onload=()=>{ clearTimeout(t); finish(true); };
-        img.onerror=()=>{ clearTimeout(t); finish(false); };
-        img.decoding='async'; img.loading='eager';
-        img.src = src;
-      });
-    }
-    async function findExisting(base){
-      for(const ext of EXTS){
-        const url = `${base}.${ext}`;
-        const ok = await tryLoad(url);
-        if (ok) return ok;
+    // -------- Fallback de imágenes sin bloquear render --------
+    function imgFallback(el){
+      // Admite múltiples "bases" separados por '|', y recorre EXT_ORDER
+      const bases = (el.dataset.bases || el.dataset.base || '').split('|').filter(Boolean);
+      let bIndex = Number(el.dataset.bIndex || 0);
+      let eIndex = Number(el.dataset.eIndex || 0);
+
+      // avanzar al siguiente intento
+      eIndex++;
+      if (eIndex >= EXT_ORDER.length){
+        eIndex = 0; bIndex++;
       }
-      return null;
+      if (bIndex >= bases.length){
+        // Sin imagen válida: oculto el contenedor para no dejar un placeholder roto
+        const card = el.closest('.col-6, .col-lg-3, .gallery-frame, article');
+        if (card) card.style.display = 'none';
+        return;
+      }
+
+      el.dataset.bIndex = String(bIndex);
+      el.dataset.eIndex = String(eIndex);
+      const nextSrc = `${bases[bIndex]}.${EXT_ORDER[eIndex]}`;
+      el.src = nextSrc;
     }
 
     // ---------------- Estado / render ----------------
@@ -297,12 +311,27 @@
     const PRODUCTS_VISIBLE_INIT = 8;
     let productsVisible = 0;
 
+    function sizeChip(id, size){ return `<button type="button" class="size-chip" data-id="${id}" data-size="${size}" aria-pressed="false">${size}</button>`; }
+    function markSelected(btn){ btn.classList.add('selected'); btn.setAttribute('aria-pressed','true'); }
+
+    function productImgTag(n){
+      // Intentará modelos (n).webp, luego jpg, jpeg, png (con mayúsculas también)
+      const bases = `modelos (${n})`;
+      const first = `${bases}.${EXT_ORDER[0]}`;
+      return `<img class="card-img-top" 
+                   src="${first}" 
+                   alt="Remera ${n} con ilustración original" 
+                   loading="lazy" decoding="async" 
+                   data-bases="${bases}" data-bIndex="0" data-eIndex="0"
+                   onerror="imgFallback(this)">`;
+    }
+
     function productCardHTML(p){
       const tagClass = (p.tag==='Nuevo' ? 'badge-new' : 'badge-pop');
       return `
         <article class="card h-100" data-pid="${p.id}">
           <div class="position-absolute m-2"><span class="badge ${tagClass}">${p.tag}</span></div>
-          <img class="card-img-top" src="${p.src}" alt="${p.name} con ilustración original" loading="lazy" decoding="async">
+          ${productImgTag(p.num)}
           <div class="card-body d-flex flex-column">
             <h3 class="product-title mb-1">${p.name}</h3>
             <div class="price mb-2">${money(p.price)}</div>
@@ -313,8 +342,7 @@
           </div>
         </article>`;
     }
-    function sizeChip(id, size){ return `<button type="button" class="size-chip" data-id="${id}" data-size="${size}" aria-pressed="false">${size}</button>`; }
-    function markSelected(btn){ btn.classList.add('selected'); btn.setAttribute('aria-pressed','true'); }
+
     grid.addEventListener('click', (ev)=>{
       const btn = ev.target.closest('.size-chip');
       if(!btn) return;
@@ -344,8 +372,6 @@
     function updateMoreProductsVisibility(total){
       const expanded = isExpanded();
       const canExpand = total > PRODUCTS_VISIBLE_INIT;
-
-      // Si ya está expandido, ocultamos controles
       gridMoreWrap.style.display = expanded ? 'none' : (canExpand ? 'block' : 'none');
       gridMoreBtnMore.style.display = (!expanded && (productsVisible < total)) ? 'inline-block' : 'none';
       gridMoreBtnLess.style.display = 'none'; // no se usa en este flujo
@@ -377,7 +403,7 @@
       clearGrid();
       const desired = isExpanded() ? list.length : Math.min(PRODUCTS_VISIBLE_INIT, list.length);
       if (desired === 0){
-        grid.innerHTML = '<p class="text-center text-secondary">Cargando diseños…</p>';
+        grid.innerHTML = '<p class="text-center text-secondary">Sin diseños para mostrar.</p>';
         updateMoreProductsVisibility(0);
         return;
       }
@@ -432,41 +458,34 @@
       const cart = getCart();
       const idx = cart.findIndex(it=> (it.key===key));
       if(idx>-1) cart[idx].qty += 1;
-      else cart.push({ key, id, name: product.name, price: product.price, size, qty: 1, img: product.src, imgFull: product.src });
+      else cart.push({ key, id, name: product.name, price: product.price, size, qty: 1, img: `modelos (${product.num}).jpg`, imgFull: `modelos (${product.num}).jpg` });
       setCart(cart); toastAdd.show();
     }
 
-    // -------- Datos estáticos (modelos 1..65 / nueva 1..8) --------
+    // -------- Datos estáticos (modelos 1..69 / galería) --------
     function computeTag(n){ return NEW_MODELS.has(n) ? 'Nuevo' : 'Popular'; }
 
-    async function loadProductsStatic(){
-      const firstBatchEnd = Math.min(16, PRODUCT_MAX);
+    function loadProductsStatic(){
+      PRODUCTS = [];
       for (let n = PRODUCT_MIN; n <= PRODUCT_MAX; n++){
-        const base = `modelos (${n})`;
-        const src = await findExisting(base);
-        if (src){
-          PRODUCTS.push({ id:'r'+n, name:`Remera ${n}`, price: priceFor(n), tag: computeTag(n), src });
-          if (!isExpanded() && n <= firstBatchEnd) scheduleApplyFilters();
-        }
-        if (n % 6 === 0) await new Promise(r=>requestAnimationFrame(r));
+        PRODUCTS.push({ id:'r'+n, num:n, name:`Remera ${n}`, price: priceFor(n), tag: computeTag(n) });
       }
-      PRODUCTS.sort((a,b)=> Number(a.id.slice(1)) - Number(b.id.slice(1)));
-      applyFilters();
+      applyFilters(); // render inmediato (las imágenes resuelven solas con fallback)
     }
 
-    let GALLERY_SRCS = [];
+    // ===== Galería con fallback y 2 posibles bases: "nueva" | "nuevo" =====
     let galleryVisible = 4;
-
-    async function loadGalleryStatic(){
-      const out = [];
-      for (let i = GALLERY_MIN; i <= GALLERY_MAX; i++){
-        const base = `nueva (${i})`;
-        const src = await findExisting(base);
-        if (src) out.push(src);
-        if (i % 4 === 0) await new Promise(r=>requestAnimationFrame(r));
-      }
-      GALLERY_SRCS = out;
-      buildGallery(galleryVisible);
+    function galleryImgTag(i){
+      const bases = [`nueva (${i})`, `nuevo (${i})`].join('|');
+      const first = `nueva (${i}).${EXT_ORDER[0]}`;
+      return `
+        <div class="gallery-frame">
+          <img class="gallery-img img-fluid shadow-sm"
+               src="${first}" alt="Galería ${i}"
+               loading="lazy" decoding="async"
+               data-bases="${bases}" data-bIndex="0" data-eIndex="0"
+               onerror="imgFallback(this)">
+        </div>`;
     }
 
     function buildGallery(visible){
@@ -476,23 +495,13 @@
       const btnLess = document.getElementById('galeriaMoreBtnLess');
 
       galeriaGrid.innerHTML = '';
-      const total = GALLERY_SRCS.length;
-
-      if(!total){
-        galeriaGrid.innerHTML = '<p class="text-secondary">No se encontraron imágenes de galería (<code>nueva (1..8).jpg/png/jpeg/webp</code>).</p>';
-        galeriaMoreWrap.style.display = 'none';
-        return;
-      }
-
+      // Mostramos 8 lugares; los que no existan se ocultarán por fallback
+      const total = GALLERY_MAX;
       const max = Math.min(visible, total);
-      for(let i=0;i<max;i++){
-        const src = GALLERY_SRCS[i];
+      for(let i=1;i<=max;i++){
         const col = document.createElement('div');
         col.className = 'col-6 col-md-3';
-        col.innerHTML = `
-          <div class="gallery-frame">
-            <img class="gallery-img img-fluid shadow-sm" src="${src}" alt="Galería ${i+1}" loading="lazy" decoding="async">
-          </div>`;
+        col.innerHTML = galleryImgTag(i);
         galeriaGrid.appendChild(col);
       }
 
@@ -510,10 +519,10 @@
     }
 
     // ---------- Init ----------
-    (async () => {
+    (function init(){
       updateCartCount();
       loadProductsStatic();
-      loadGalleryStatic();
+      buildGallery(galleryVisible);
     })();
 
     // Exponer helpers
@@ -526,6 +535,7 @@
     window.addToCart = addToCart;
     window.collapseNav = collapseNav;
     window.setActive = setActive;
+    window.imgFallback = imgFallback;
   </script>
 </body>
 </html>
